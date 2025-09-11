@@ -29,7 +29,7 @@ export function ThemeToggleButton() {
         },
       ]}
     >
-      <ThemedText style={{ color: colors.card }}>
+      <ThemedText style={{ }}>
         Mudar para tema {colorScheme === 'dark' ? 'Claro' : 'Escuro'}
       </ThemedText>
     </Pressable>
