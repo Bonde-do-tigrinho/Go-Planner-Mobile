@@ -35,9 +35,9 @@ function RootLayoutNav() {
  */
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    'Inter': require('../assets/fonts/Inter-Regular.ttf'),
-    'Inter-SemiBold': require('../assets/fonts/Inter-SemiBold.ttf'),
-    'Inter-Bold': require('../assets/fonts/Inter-Bold.ttf'),
+    'Inter': require('../assets/fonts/Inter_18pt-Regular.ttf'),
+    'Inter-SemiBold': require('../assets/fonts/Inter_18pt-SemiBold.ttf'),
+    'Inter-Bold': require('../assets/fonts/Inter_18pt-Bold.ttf'),
   });
   console.log('Font Loaded Status:', loaded);
   console.log('Font Error:', error);
