@@ -93,6 +93,7 @@ export default function TabTwoScreen() {
             </ThemedText>
           ),
         })}
+        
       </Collapsible>
     </ParallaxScrollView>
   );

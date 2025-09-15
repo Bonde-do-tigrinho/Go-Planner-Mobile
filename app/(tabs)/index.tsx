@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, Text } from 'react-native';
+import { Platform, StyleSheet, Text, View, Button } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -8,7 +8,22 @@ import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
 import { BtnThemeToggleButton } from '@/components/ui/btnToggleTheme';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+
 export default function HomeScreen() {
+  //resetar o AsyncStorage para eu poder ver a tela de onboarding
+  const handleResetOnboarding = async () => {
+    try {
+      console.log('Limpando a chave do onboarding...');
+      await AsyncStorage.removeItem('hasCompletedOnboarding');
+      console.log('Chave limpa! Reiniciando o app...');
+      // O reload força o app a passar pelo porteiro (app/index.tsx) novamente
+      router.replace('/(onboarding)'); 
+    } catch (e) {
+      console.error('Falha ao limpar o AsyncStorage', e);
+    }
+  };
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -24,6 +39,13 @@ export default function HomeScreen() {
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
+        <View style={styles.debugButton}>
+          <Button
+            title="Resetar Onboarding (Debug)"
+            onPress={handleResetOnboarding}
+            color="green"
+          />
+        </View>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
         <ThemedText>
           Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
@@ -98,5 +120,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  debugButton: {
+    position: 'absolute',
+    bottom: 50,
   },
 });
