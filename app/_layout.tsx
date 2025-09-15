@@ -1,5 +1,3 @@
-// app/_layout.tsx
-
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, SplashScreen } from 'expo-router';
@@ -16,6 +14,7 @@ SplashScreen.preventAutoHideAsync();
  * Componente que renderiza a navegação principal.
  * Ele só é chamado DEPOIS que as fontes foram carregadas.
  */
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 

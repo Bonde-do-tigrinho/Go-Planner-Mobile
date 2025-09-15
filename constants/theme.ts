@@ -8,9 +8,13 @@ import { Platform } from 'react-native';
 const tintColorLight = '#FF5733';
 const tintColorDark = '#fff';
 
+//troquei as cores para poder visualizar como ficariaa ver lightmode, pois sempre começa com a dark
 export const Colors = {
-  light: {
-    text: '#11181C',
+  dark: {
+    textTitle: '#09090B', 
+    textPrimary: '#3F3F46', 
+    textSecondary: '#71717A',  
+    textTerciary: '#A1A1AA',  
     background: '#fff',
     background02: 'red',
     tint: tintColorLight,
@@ -18,8 +22,11 @@ export const Colors = {
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
   },
-  dark: {
-    text: '#ECEDEE',
+  light: {
+    textTitle:   '#FAFAFA',    
+    textPrimary: '#E4E4E7',   
+    textSecondary: '#A1A1AA',  
+    textTerciary:  '#71717A', 
     background: '#151718',
     background02: 'green',
     tint: tintColorDark,

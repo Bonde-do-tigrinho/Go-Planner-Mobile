@@ -1,8 +1,8 @@
-import { Tabs } from 'expo-router';
+// app/(tabs)/_layout.tsx
 import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Platform } from 'react-native';
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons'; // Importamos o Ionicons
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -12,31 +12,76 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint, // Aqui ele usa 
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarShowLabel: false,
+
+        tabBarStyle: {
+          position: 'absolute',
+          marginHorizontal: 40, // Cuidado: marginHorizontal + left/right pode causar problemas. Escolha um ou outro.
+          bottom: 25,
+          // Removido left e right para usar marginHorizontal, que centraliza melhor.
+          height: 65,
+          borderRadius: 30,
+          borderTopWidth: 0,
+          backgroundColor: colorScheme === 'dark' ? '#fff' : '#1e1e1e',
+
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 5,
+            },
+            android: {
+              elevation: 8,
+            },
+          }),
+        },
+
+        tabBarItemStyle: {
+          justifyContent: 'flex-start',
+          paddingTop: 12,
+
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'home' : 'home-outline'}
+              size={32} // Usar o 'size' padrão da tab bar é uma boa prática
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'people' : 'people-outline'}
+              size={32}
+              color={color}
+            />
+          ),
         }}
       />
-      {/* <Tabs.Screen
-        name="teste"
+      <Tabs.Screen
+        name="profile"
         options={{
-          title: 'teste',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'person' : 'person-outline'}
+              size={32}
+              color={color}
+            />
+          ),
         }}
-      /> */}
+      />
     </Tabs>
   );
 }

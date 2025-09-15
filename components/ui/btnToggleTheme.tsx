@@ -3,7 +3,7 @@ import { Appearance } from 'react-native'; // 👈 Importe a API Appearance
 import { ThemedText } from '@/components/themed-text'; // Componente de texto do seu projeto
 import { useTheme } from '@react-navigation/native'; // Para pegar as cores do tema
 
-export function ThemeToggleButton() {
+export function BtnThemeToggleButton() {
   // 1. Pega o esquema de cores ATUAL. Ele será 'light' ou 'dark'.
   const colorScheme = useColorScheme();
   
@@ -29,7 +29,7 @@ export function ThemeToggleButton() {
         },
       ]}
     >
-      <ThemedText style={{ }}>
+      <ThemedText style={styles.button} colorText='textPrimary'>
         Mudar para tema {colorScheme === 'dark' ? 'Claro' : 'Escuro'}
       </ThemedText>
     </Pressable>
