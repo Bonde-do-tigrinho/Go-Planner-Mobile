@@ -3,14 +3,14 @@ import React, { useRef, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, useWindowDimensions, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ImageBackground } from 'expo-image'; // Usar ImageBackground da expo-image para melhor performance
-
+import { Image, ImageBackground } from 'expo-image'; // Usar ImageBackground da expo-image para melhor performance
+import { BlurView } from 'expo-blur';
 // Dados para as telas de onboarding
 const onboardingSteps = [
   {
     id: '1',
     image: require('@/assets/images/onboarding/onboarding01.png'), // Substitua pelos caminhos corretos
-    title: 'Bem vindo ao\nGo planner',
+    title: 'Bem vindo ao\nGo.planner',
     description: 'Vamos começar sua jornada.',
   },
   {
@@ -76,7 +76,12 @@ export default function OnboardingScreen() {
       >
         {onboardingSteps.map((step) => (
           <ImageBackground key={step.id} source={step.image} style={[styles.slide, { width }]}>
+
             <View style={styles.overlay} />
+            <Image
+              source={require('@/assets/images/logo-white.svg')}
+              style={styles.logo}
+            />
             <Text style={styles.title}>{step.title}</Text>
             <Text style={styles.description}>{step.description}</Text>
           </ImageBackground>
@@ -84,7 +89,9 @@ export default function OnboardingScreen() {
       </ScrollView>
       
       {/* Indicador de progresso e botão */}
-      <View style={[styles.footer, { width }]}>
+      <BlurView 
+        style={[styles.footer, { width }]}
+        tint="dark" intensity={80}>
         <View style={styles.dotsContainer}>
           {onboardingSteps.map((_, index) => (
             <View
@@ -100,7 +107,7 @@ export default function OnboardingScreen() {
         <Pressable style={styles.button} onPress={isLastStep ? handleComplete : handleNext}>
           <Text style={styles.buttonText}>{isLastStep ? 'Começar' : 'Continuar'}</Text>
         </Pressable>
-      </View>
+      </BlurView>
     </View>
   );
 }
@@ -113,9 +120,10 @@ const styles = StyleSheet.create({
   },
   slide: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 140
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -133,16 +141,27 @@ const styles = StyleSheet.create({
     color: '#eee',
     textAlign: 'center',
   },
+  logo: {
+    width: 67,
+    height: 80,
+    marginBottom: 8
+  },
   footer: {
     position: 'absolute',
-    bottom: 40,
+    bottom:0,
     left: 0,
     paddingHorizontal: 20,
     alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 40,
+    borderRadius: 16,
+    overflow: 'hidden', // Importante para o borderRadius funcionar com o blur
+    // Cor de fundo semitransparente para o efeito de vidro fosco
+    
   },
   dotsContainer: {
     flexDirection: 'row',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   dot: {
     width: 10,

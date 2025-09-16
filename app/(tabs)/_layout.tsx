@@ -76,7 +76,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'person' : 'person-outline'}
-              size={32}
+              size={28}
               color={color}
             />
           ),
