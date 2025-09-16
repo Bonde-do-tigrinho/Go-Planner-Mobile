@@ -154,7 +154,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 40,
-    borderRadius: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     overflow: 'hidden', // Importante para o borderRadius funcionar com o blur
     // Cor de fundo semitransparente para o efeito de vidro fosco
     
