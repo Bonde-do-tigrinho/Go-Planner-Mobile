@@ -22,6 +22,7 @@ export function ThemedText({
   const color = useThemeColor({ light: lightColor, dark: darkColor }, textColor);
 
   return (
+    <>
     <Text
       style={[
         { color },
@@ -34,6 +35,8 @@ export function ThemedText({
       ]}
       {...rest}
     />
+    
+    </>
   );
 }
 

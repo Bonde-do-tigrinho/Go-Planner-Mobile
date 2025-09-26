@@ -89,9 +89,29 @@ export default function OnboardingScreen() {
       </ScrollView>
       
       {/* Indicador de progresso e botão */}
+     
+{/* <BlurView
+  style={{
+    position: 'absolute',
+    width: '100%',
+    height: '50%', // Cobrindo metade da tela
+    bottom: 0,
+    // Apenas para garantir que ele esteja visível
+    borderColor: 'red',
+    borderWidth: 2,
+  }}
+  intensity={100} // Intensidade máxima
+  tint="dark" // Um tint bem óbvio
+>
+  <Text style={{ color: 'white', fontSize: 30, textAlign: 'center', marginTop: 50 }}>
+    O BLUR ESTÁ AQUI?
+  </Text>
+</BlurView> */}
       <BlurView 
         style={[styles.footer, { width }]}
-        tint="dark" intensity={80}>
+        tint="dark" 
+        intensity={50}
+      >
         <View style={styles.dotsContainer}>
           {onboardingSteps.map((_, index) => (
             <View
@@ -103,7 +123,7 @@ export default function OnboardingScreen() {
             />
           ))}
         </View>
-
+            
         <Pressable style={styles.button} onPress={isLastStep ? handleComplete : handleNext}>
           <Text style={styles.buttonText}>{isLastStep ? 'Começar' : 'Continuar'}</Text>
         </Pressable>
