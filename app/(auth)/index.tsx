@@ -15,7 +15,7 @@ export default function AuthScreen() {
     >
       <Text style={styles.title}>
         Bem vindo ao Go
-        <Ionicons name="ellipse" size={8} color="#FF5733" /> planner
+        <Ionicons name="ellipse" size={9} color="#FF5733" />planner
       </Text>
 
       <ThemedView style={[styles.footer, { width }]} darkBg="#fff" lightBg="#fff">
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     width: "100%", // Garante que o container de conteúdo também ocupe toda a largura
   },
   title: {
-    fontSize: 32,
+    fontSize: 38,
     color: "#fff",
     marginHorizontal: 68,
     textAlign: "center",

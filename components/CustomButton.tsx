@@ -17,6 +17,7 @@ type ButtonSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
 interface ButtonProps {
   title: string;
+  style?: string
   onPress: () => void;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -67,6 +68,7 @@ const sizes: Record<ButtonSize, { paddingVertical: number; paddingHorizontal: nu
 };
 
 const Button: React.FC<ButtonProps> = ({
+  style,
   title,
   onPress,
   variant = 'primary',

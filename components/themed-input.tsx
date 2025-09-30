@@ -1,13 +1,21 @@
 // components/ui/ThemedInput.tsx
 import React, { useState } from 'react';
-import { TextInput, StyleSheet, TextInputProps, View, NativeSyntheticEvent, TextInputFocusEventData } from 'react-native';
+import {
+  TextInput,
+  StyleSheet,
+  View,
+  NativeSyntheticEvent,
+  TextInputFocusEventData,
+  TextInputProps,
+  Pressable, // Importar Pressable
+} from 'react-native';
 import { ThemedView, ThemedViewProps } from './themed-view';
 import { ThemedText } from './themed-text';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-type ThemedInputProps = TextInputProps & {
+type ThemedInputProps = Omit<TextInputProps, 'onFocus' | 'onBlur'> & {
   label: string;
   icon?: keyof typeof Ionicons.glyphMap;
   containerProps?: ThemedViewProps;
@@ -15,6 +23,10 @@ type ThemedInputProps = TextInputProps & {
   lightColor?: string;
   darkColor?: string;
   textInputName?: keyof typeof Colors.light & keyof typeof Colors.dark;
+  onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void;
+  onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void;
+  // NOVA PROP: Para indicar se é um campo de senha
+  isPassword?: boolean;
 };
 
 export function ThemedInput({
@@ -25,32 +37,41 @@ export function ThemedInput({
   containerProps,
   error,
   onFocus,
-  onBlur, 
-  textInputName = "bgPrimary", // Usando "text" como padrão
+  onBlur,
+  textInputName = 'textSecondary', // Mudei o padrão para algo mais lógico para texto
+  isPassword = false, // NOVA PROP: Padrão é false
+  secureTextEntry, // Removido de textInputProps para ser controlado internamente
   ...textInputProps
 }: ThemedInputProps) {
   const [isFocused, setIsFocused] = useState(false);
+  // NOVO ESTADO: Para controlar a visibilidade da senha
+  const [showPassword, setShowPassword] = useState(false);
 
   const activeBorderName = isFocused ? 'primary' : 'borderPrimary';
   const defaultBorderName = error ? 'notification' : activeBorderName;
 
   const iconColor = useThemeColor({}, 'icon');
-  // Aqui buscamos a string da cor
+  const placeholderColor = useThemeColor({}, "textTerciary");
   const textColor = useThemeColor({ light: lightColor, dark: darkColor }, textInputName);
 
-   // MUDANÇA: Nova função para lidar com o evento de foco
   const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
-    setIsFocused(true); // Executa a lógica interna
+    setIsFocused(true);
     if (onFocus) {
-      onFocus(e); // Executa a lógica externa (do React Hook Form)
+      onFocus(e);
     }
   };
-   const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
-    setIsFocused(false); // Executa a lógica interna
+  const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    setIsFocused(false);
     if (onBlur) {
-      onBlur(e); // Executa a lógica externa (do React Hook Form)
+      onBlur(e);
     }
   };
+
+  // Função para alternar a visibilidade da senha
+  const toggleShowPassword = () => {
+     setShowPassword(prev => !prev); 
+  };
+
   return (
     <View style={styles.wrapper}>
       {label && <ThemedText colorName="textPrimary" style={styles.label}>{label}</ThemedText>}
@@ -61,22 +82,34 @@ export function ThemedInput({
         borderWidth={1}
         {...containerProps}
       >
+        {/* Ícone normal (se existir) */}
         {icon && <Ionicons name={icon} size={20} color={iconColor} style={styles.icon} />}
+
         <TextInput
-          // E aqui a aplicamos dentro de um objeto { color: ... }
           style={[styles.input, { color: textColor }]}
-          placeholderTextColor={iconColor}
-          onFocus={handleFocus} // MUDANÇA: Usando a nova função
-          onBlur={handleBlur}  
+          placeholderTextColor={placeholderColor}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          // Lógica para secureTextEntry
+          secureTextEntry={isPassword && !showPassword} // Apenas segura se for senha E não estiver mostrando
           {...textInputProps}
         />
+
+        {isPassword && (
+          <Pressable onPress={toggleShowPassword} style={styles.passwordToggle}>
+            <Ionicons
+              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={iconColor}
+            />
+          </Pressable>
+        )}
       </ThemedView>
       {error && <ThemedText colorName="notification" style={styles.errorText}>{error}</ThemedText>}
     </View>
   );
 }
 
-// ... (seus estilos)
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
@@ -94,7 +127,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   containerError: {
-    borderWidth: 1.5
+    borderWidth: 1.5,
   },
   icon: {
     marginRight: 8,
@@ -103,6 +136,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 50,
     fontSize: 16,
+  },
+  passwordToggle: {
+    paddingLeft: 8, // Espaçamento entre o input e o ícone de olho
   },
   errorText: {
     marginTop: 4,

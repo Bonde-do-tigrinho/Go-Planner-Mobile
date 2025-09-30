@@ -5,7 +5,7 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { ThemedInput } from '@/components/themed-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -24,10 +24,10 @@ export default function LoginScreen() {
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
-
+  const router = useRouter();
   const onSubmit = (data: LoginFormData) => {
     console.log('Enviando dados de login:', data);
-    return new Promise(resolve => setTimeout(resolve, 2000));
+    router.push('/(tabs)')
   };
 
   const iconColor = useThemeColor({}, 'primary');
@@ -79,8 +79,7 @@ export default function LoginScreen() {
                 error={errors.password?.message}
               />
             )}
-          />
-          
+          />  
           <Link href="/(auth)/forgot-password" asChild>
             <Pressable>
               <ThemedText colorName="tint" style={styles.forgotPassword}>
@@ -88,18 +87,6 @@ export default function LoginScreen() {
               </ThemedText>
             </Pressable>
           </Link>
-
-          {/* MUDANÇA: Botão de login agora usa componentes temáticos Fazer login →*/}
-          {/* <Pressable onPress={handleSubmit(onSubmit)} disabled={isSubmitting}>
-            <ThemedView
-              style={[styles.loginButton, isSubmitting && styles.buttonDisabled]}
-              bgName="tint"
-            >
-              <ThemedText type="d" lightColor="#fff" darkColor="#111">
-                Fazer login →
-              </ThemedText>
-            </ThemedView>
-          </Pressable> */}
           <Button
             title="Fazer login"
             onPress={handleSubmit(onSubmit)}
@@ -153,6 +140,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginBottom: 24,
     fontWeight: '500',
+    fontSize: 14
   },
   loginButton: {
     paddingVertical: 16,
