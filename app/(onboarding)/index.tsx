@@ -42,7 +42,7 @@ export default function OnboardingScreen() {
   const handleComplete = async () => {
     try {
       await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
-      router.replace("/(tabs)"); // Navega para a tela de login/cadastro
+      router.replace("/(auth)"); // Navega para a tela de login/cadastro
     } catch (e) {
       console.error('Erro ao salvar no AsyncStorage', e);
     }

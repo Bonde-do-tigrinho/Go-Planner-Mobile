@@ -1,74 +1,88 @@
-import { Fonts } from "@/constants/theme"
-import { Ionicons } from "@expo/vector-icons"
-import { BlurView } from "expo-blur"
-import { ImageBackground } from "expo-image"
-import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native"
+import Button from "@/components/CustomButton";
+import { ThemedView } from "@/components/themed-view";
+import { Fonts } from "@/constants/theme";
+import { Ionicons } from "@expo/vector-icons";
+import { ImageBackground } from "expo-image";
+import { Link } from "expo-router";
+import { StyleSheet, Text, useWindowDimensions } from "react-native";
 
-export default function AuthScreen(){
+export default function AuthScreen() {
   const { width } = useWindowDimensions();
-  return(
-    <ImageBackground 
-      source={require('@/assets/images/background-auth.png')} 
+  return (
+    <ImageBackground
+      source={require("@/assets/images/background-auth.png")}
       style={styles.container}
     >
-      
-      <Text style={styles.title}>Bem vindo ao Go 
+      <Text style={styles.title}>
+        Bem vindo ao Go
         <Ionicons name="ellipse" size={8} color="#FF5733" /> planner
       </Text>
-      
-      <BlurView 
-        style={[styles.footer, { width }]}
-        tint="dark" 
-        intensity={100}
-      >
-              <Pressable style={styles.button} onPress={() => {}}>
-                <Text style={styles.buttonText}>aa</Text>
-              </Pressable>
-            </BlurView>
+
+      <ThemedView style={[styles.footer, { width }]} darkBg="#fff" lightBg="#fff">
+      <Link href={"/(auth)/login"} asChild>
+        <Button
+          title="Já tenho uma conta"
+          onPress={() => {}}
+          variant="gradient-primary"
+          size="xl"
+          width="100%"
+        />
+      </Link>
+      <Link href={"/(auth)/register"} asChild>
+        <Button
+          title="Criar uma conta nova"
+          onPress={() => {}}
+          variant="outline-orange"
+          size="xl"
+          width="100%"
+        />   
+      </Link>
+      </ThemedView>
     </ImageBackground>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)', // Adiciona um overlay escuro para legibilidade
-    width: '100%', // Garante que o container de conteúdo também ocupe toda a largura
+    justifyContent: "flex-start",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)", // Adiciona um overlay escuro para legibilidade
+    width: "100%", // Garante que o container de conteúdo também ocupe toda a largura
   },
-  title:{
+  title: {
     fontSize: 32,
-    color: '#fff',
+    color: "#fff",
     marginHorizontal: 68,
-    textAlign: 'center',
+    textAlign: "center",
     fontFamily: Fonts.sansSemiBold,
-    marginTop: 130
+    marginTop: 130,
   },
   footer: {
-    position: 'absolute',
-    bottom:0,
+    position: "absolute",
+    bottom: 0,
     left: 0,
     paddingHorizontal: 20,
-    alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 40,
+    alignItems: "center",
+    paddingVertical: 40,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    overflow: 'hidden',
-    height: '60%',
+    overflow: "hidden",
+    height: "55%",
+    display: 'flex',
+    gap: 32
   },
-    button: {
-    backgroundColor: '#fff',
+  button: {
+    backgroundColor: "#fff",
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 30,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
-   buttonText: {
-    color: '#FF5733',
+  buttonText: {
+    color: "#FF5733",
     fontSize: 16,
-    fontWeight: 'bold',
-  }, 
-})
+    fontWeight: "bold",
+  },
+});
