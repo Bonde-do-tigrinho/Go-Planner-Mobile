@@ -4,10 +4,15 @@ import { Fonts } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { ImageBackground } from "expo-image";
 import { Link } from "expo-router";
-import { StyleSheet, Text, useWindowDimensions } from "react-native";
+import { useEffect } from "react";
+import { Appearance, StyleSheet, Text, useWindowDimensions } from "react-native";
 
 export default function AuthScreen() {
   const { width } = useWindowDimensions();
+
+  useEffect(() => {
+    Appearance.setColorScheme("light");
+  }, [])
   return (
     <ImageBackground
       source={require("@/assets/images/background-auth.png")}
@@ -15,28 +20,42 @@ export default function AuthScreen() {
     >
       <Text style={styles.title}>
         Bem vindo ao Go
-        <Ionicons name="ellipse" size={9} color="#FF5733" />planner
+        <Ionicons name="ellipse" size={9} color="#FF5733" />
+        planner
       </Text>
 
-      <ThemedView style={[styles.footer, { width }]} darkBg="#fff" lightBg="#fff">
-      <Link href={"/(auth)/login"} asChild>
-        <Button
-          title="Já tenho uma conta"
-          onPress={() => {}}
-          variant="gradient-primary"
-          size="xl"
-          width="100%"
-        />
-      </Link>
-      <Link href={"/(auth)/register"} asChild>
-        <Button
-          title="Criar uma conta nova"
-          onPress={() => {}}
-          variant="outline-orange"
-          size="xl"
-          width="100%"
-        />   
-      </Link>
+      <ThemedView
+        style={[styles.footer, { width }]}
+        darkBg="#fff"
+        lightBg="#fff"
+      >
+        <Link href={"/(auth)/login"} asChild>
+          <Button
+            title="Já tenho uma conta"
+            onPress={() => {}}
+            variant="gradient-primary"
+            size="xl"
+            width="100%"
+          />
+        </Link>
+        <Link href={"/(auth)/register"} asChild>
+          <Button
+            title="Criar uma conta nova"
+            onPress={() => {}}
+            variant="outline-orange"
+            size="xl"
+            width="100%"
+          />
+        </Link>
+        <Link href={"/(tabs)"} asChild>
+          <Button
+            title="Ir para home"
+            onPress={() => {}}
+            variant="secondary"
+            size="xl"
+            width="100%"
+          />
+        </Link>
       </ThemedView>
     </ImageBackground>
   );
@@ -69,8 +88,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 16,
     overflow: "hidden",
     height: "55%",
-    display: 'flex',
-    gap: 32
+    display: "flex",
+    gap: 32,
   },
   button: {
     backgroundColor: "#fff",

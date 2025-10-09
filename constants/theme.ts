@@ -10,8 +10,9 @@ const tintColorDark = '#fff';
 const notification = "#C70039"
 //troquei as cores para poder visualizar como ficariaa ver lightmode, pois sempre começa com a dark
 export const Colors = {
-  dark: {
+  light: {
     primary: '#FF5733',
+    secondary: "#C70039",
     textTitle: '#09090B', 
     textPrimary: '#3F3F46', 
     textSecondary: '#71717A',  
@@ -21,20 +22,21 @@ export const Colors = {
     bgTerciary: '#fff',
     borderPrimary: "#999",
     tint: tintColorLight,
-    icon: '#687076',
+    icon: '#aaa',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
     notification: notification
 
   },
-  light: {
+  dark: {
     primary: '#FF5733',
+    secondary: "#C70039",
     textTitle:   '#FAFAFA',    
     textPrimary: '#E4E4E7',   
     textSecondary: '#A1A1AA',  
     textTerciary:  '#71717A', 
     bgPrimary: '#151718',
-    borderPrimary: "#ddd",
+    borderPrimary: "#999",
     tint: tintColorDark,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',

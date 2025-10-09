@@ -1,53 +1,54 @@
+import Header from "@/components/Header";
+import Info from "@/components/profile/info";
+import TabSelector from "@/components/tab-selector";
 import { ThemedView } from "@/components/themed-view";
-import { BtnThemeToggleButton } from "@/components/ui/btnToggleTheme";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-import { Button, StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
-export default function Profile(){
-  const insets = useSafeAreaInsets();
+import { useState } from "react";
+import { ScrollView, StyleSheet } from "react-native";
 
-  const handleResetOnboarding = async () => {
-    try {
-      await AsyncStorage.removeItem('hasCompletedOnboarding');
-      router.replace('/(onboarding)');
-    } catch (e) {
-      console.error('Falha ao limpar o AsyncStorage', e);
+export default function ProfileScreen() {
+  const tabs = ["Dados pessoais", "Histórico de viagem", "Configurações"];
+
+  const [activeTab, setActiveTab] = useState(tabs[0]);
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "Dados pessoais":
+        return <Info />// Continua funcionando perfeitamente
+      // ... outros casos
     }
   };
 
-  return(
-    <ThemedView
-      style={[
-        styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom }
-      ]}
-      bgColor="background"
-    >
-      <BtnThemeToggleButton />
-      <View style={styles.debugButton}>
-        <Button
-          title="Resetar Onboarding (Debug)"
-          onPress={handleResetOnboarding}
-          color="green"
-        />
-      </View>
-    </ThemedView>
+  return (
+    <>
+      <ThemedView style={styles.container} bgName="bgPrimary">
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <Header title="Perfil" ballColor="secondary"></Header>
+          <TabSelector
+            activeTab={activeTab}
+            onTabPress={setActiveTab}
+            tabs={tabs}
+          />
+          {renderTabContent()}
+        </ScrollView>
+      </ThemedView>
+      <StatusBar style="auto" />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  debugButton: {
-    width: 300,
-    borderRadius: 16,
-  },
-  container:{
+  container: {
     flex: 1,
-    display: 'flex',
+    display: "flex",
     flexDirection: "column",
     gap: 20,
-    justifyContent:'center',
-    alignItems: 'center'
-  }
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  scrollContainer: {
+    paddingVertical: 24, // Espaçamento vertical para o conteúdo não colar no topo/fundo
+    paddingHorizontal: 16, // Espaçamento horizontal nas laterais da tela
+  },
 });
