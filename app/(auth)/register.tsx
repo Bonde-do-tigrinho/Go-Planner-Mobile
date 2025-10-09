@@ -34,7 +34,9 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterScreen() {
   const router = useRouter();
-   
+  const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
+    resolver: zodResolver (registerSchema),
+  });
 
   const onSubmit = (data: RegisterFormData) => {
     console.log('Enviando dados de cadastro:', data);
