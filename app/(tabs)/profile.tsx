@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import Info from "@/components/profile/info";
 import TabSelector from "@/components/tab-selector";
+import { ThemedText } from "@/components/themed-text";
+import ThemedTitle from "@/components/themed-title";
 import { ThemedView } from "@/components/themed-view";
 import { StatusBar } from "expo-status-bar";
 
@@ -24,7 +26,9 @@ export default function ProfileScreen() {
     <>
       <ThemedView style={styles.container} bgName="bgPrimary">
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Header title="Perfil" ballColor="secondary"></Header>
+          <Header>
+            <ThemedTitle ballColor="secondary" title="Perfil" />
+          </Header>
           <TabSelector
             activeTab={activeTab}
             onTabPress={setActiveTab}

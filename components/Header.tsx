@@ -1,37 +1,19 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { Pressable, StyleSheet, View } from "react-native";
-import { ThemedText } from "./themed-text";
+import { Pressable, StyleSheet} from "react-native";
 import { ThemedView } from "./themed-view";
 import { BtnThemeToggleButton } from "./ui/btnToggleTheme";
 
-const ballColors = {
-  primary: "#FF5733",
-  secondary: "#C70039",
-} as const;
-
 interface headerProps {
-  title: string;
-  ballColor: keyof typeof ballColors;
+  children: React.ReactNode
 }
 
 export default function Header(props: headerProps) {
   const iconColor = useThemeColor({}, "textSecondary");
   return (
     <ThemedView style={styles.container} bgName="bgPrimary">
-      <View style={styles.titleContainer}>
-        <ThemedText type="subtitle" colorName="textPrimary">
-          {props.title}
-        </ThemedText>
-        {/* Agora o ícone é um irmão, não um filho, e recebe a cor corretamente */}
-        <Ionicons
-          name={"ellipse"}
-          color={ballColors[props.ballColor]}
-          size={10}
-          style={{ paddingBottom: 4 }}
-        />
-      </View>
+      {props.children}
       <ThemedView bgName="bgPrimary" style={styles.iconsContainer}>
         <BtnThemeToggleButton />
         <Link href={"/(tabs)"}>
@@ -65,10 +47,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
-  },
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 8, // Espaçamento entre o título e a bolinha
   },
 });
