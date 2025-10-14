@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, Text, View, Button } from 'react-native';
+import { Platform, StyleSheet, Text, View, Button, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -7,9 +7,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
 import { BtnThemeToggleButton } from '@/components/ui/btnToggleTheme';
-import { ScrollView } from 'react-native-gesture-handler';
 import Header from '@/components/Header';
 import GradientText from '@/components/GradientText';
+import ThemedTitle from '@/components/themed-title';
 
 
 export default function HomeScreen() {
@@ -18,7 +18,15 @@ export default function HomeScreen() {
     name: 'Nicolas Yanase',
     avatar: 'https://avatars.githubusercontent.com/u/63155478?v=4',
   }
-  
+  const popularTrips = [
+    {
+      id: 1,
+      country: "USA",
+      local: "Disney",
+      image: "assets/popularTrips/disney.png"
+    },
+
+  ]
   return (
   <>
     <ThemedView style={styles.container} bgName="bgPrimary">
@@ -30,14 +38,34 @@ export default function HomeScreen() {
               style={styles.avatar}
             />
 
-            <GradientText>
+            <ThemedText colorName='primary' type='subtitle' >
+               Olá, {user.name}
+            </ThemedText >
+            {/* <GradientText>
               Olá, {user.name}
-            </GradientText>
+            </GradientText> */}
           </View>
         </Header>
-       <View>
-        oi
-       </View>
+        <ThemedView style={styles.mainContainer}>
+          <ThemedTitle title='Viagens Populares' ballColor='primary'/>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            style={styles.containerPopularTrips}
+          >
+            {
+              popularTrips.map(trip => (
+                <View key={trip.id} style={styles.containerTrip} >
+                  <Image
+                    source={{ uri: trip.image }}
+                    style={styles.trip}
+                  />
+                  <ThemedText colorName='textSecondary'> {trip.local} - {trip.country} </ThemedText>
+                </View>
+              ))
+            }
+          </ScrollView>
+        </ThemedView> 
       </ScrollView>
     </ThemedView>
     <StatusBar style="auto" />
@@ -67,5 +95,25 @@ const styles = StyleSheet.create({
     display: "flex",
     alignItems: "center",
     gap: 10
+  },
+  mainContainer:{
+    display: "flex",
+    alignItems: "center",
+    gap: 16
+  },
+  containerPopularTrips:{
+    display: "flex",
+    gap: 10
+  },
+  containerTrip: {
+    display: "flex",
+    justifyContent: "center",
+    flexDirection: "column"
+  },
+  trip: {
+    width: 120,
+
+    height: 120,
+    borderRadius: 50,
   }
 });
