@@ -1,5 +1,7 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { ThemedView } from "./themed-view";
+import { useThemeColor } from "@/hooks/use-theme-color";
+
 
 const colors = {
   primary: "#FFE3DD",
@@ -19,6 +21,10 @@ export default function TabSelector({
   activeTab,
   onTabPress,
 }: tabSelectorProps) {
+  const tabActive = useThemeColor({}, 'tabActive');
+  const tabTextActive = useThemeColor({}, 'tabTextActive');
+  const tabInactive = useThemeColor({}, 'tabInactive');
+  const tabTextInactive = useThemeColor({}, 'tabTextInactive');
   return (
     <ThemedView bgName="bgPrimary" style={styles.container}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -27,10 +33,10 @@ export default function TabSelector({
           return (
             <TouchableOpacity
               key={tab}
-              style={[styles.tab, isActive && styles.activeTab]}
+              style={[styles.tab, {borderColor: tabInactive}, isActive && {backgroundColor: tabActive, borderWidth: 0}]}
               onPress={() => onTabPress(tab)}
             >
-              <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+              <Text style={[{color: tabTextInactive}, {borderColor: tabInactive}, isActive && {color: tabTextActive, borderWidth: 0} ]}>
                 {tab}
               </Text>
             </TouchableOpacity>
@@ -42,7 +48,7 @@ export default function TabSelector({
 }
 const styles = StyleSheet.create({
   container: {
-    paddingLeft: 10, // Começa com o mesmo padding do header
+    paddingLeft: 0, // Começa com o mesmo padding do header
     paddingVertical: 15,
   },
   tab: {
@@ -54,14 +60,10 @@ const styles = StyleSheet.create({
     marginRight: 10, // Espaçamento entre os botões
   },
   activeTab: {
-    backgroundColor: colors.primary,
     borderWidth: 0
   },
   tabText: {
     color: colors.tabInactiveText,
     fontWeight: "500",
-  },
-  activeTabText: {
-    color: colors.tabActiveText,
   },
 });
