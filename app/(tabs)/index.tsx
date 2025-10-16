@@ -1,15 +1,20 @@
 import Header from "@/components/Header";
+import ListTrips from "@/components/home/listTrips";
 import TabSelector from "@/components/tab-selector";
 import { ThemedText } from "@/components/themed-text";
 import ThemedTitle from "@/components/themed-title";
 import { ThemedView } from "@/components/themed-view";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 export default function HomeScreen() {
-  //resetar o AsyncStorage para eu poder ver a tela de onboarding
+  const btnPlus = useThemeColor({}, "btnPlus");
+  const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
   const user = {
     name: "Nicolas Yanase",
     avatar: "https://avatars.githubusercontent.com/u/63155478?v=4",
@@ -55,6 +60,8 @@ export default function HomeScreen() {
         { id: 2, name: "raul", avatar: "https://i.pravatar.cc/150?img=2" },
         { id: 3, name: "Leandro", avatar: "https://i.pravatar.cc/150?img=3" },
         { id: 4, name: "Miguel", avatar: "https://i.pravatar.cc/150?img=5" },
+        { id: 5, name: "Leandro", avatar: "https://i.pravatar.cc/150?img=3" },
+        { id: 6, name: "Miguel", avatar: "https://i.pravatar.cc/150?img=5" },
       ],
     },
     {
@@ -102,12 +109,8 @@ export default function HomeScreen() {
       local: "USA, Nova Iorque",
       dateFrom: "2025-07-01",
       dateTo: "2025-07-08",
-      image: require("../../assets/images/popularTrips/disney.png"), // Placeholder
-      guest: [
-        { id: 1, name: "kendi", avatar: "https://i.pravatar.cc/150?img=1" },
-        { id: 3, name: "Leandro", avatar: "https://i.pravatar.cc/150?img=3" },
-        { id: 4, name: "Miguel", avatar: "https://i.pravatar.cc/150?img=5" },
-      ],
+      image: require("../../assets/images/popularTrips/disney.png"),
+      guest: [],
     },
     {
       id: 6,
@@ -182,13 +185,26 @@ export default function HomeScreen() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "Todas":
-        return <View> todas </View>; // Continua funcionando perfeitamente
+        return <ListTrips userTrips={userTrips} />; // Continua funcionando perfeitamente
       // ... outros casos
     }
   };
   return (
     <>
       <ThemedView style={styles.container} bgName="bgPrimary">
+        <Pressable
+          style={styles.addButtonContainer}
+          onPress={() => router.push("/modal")}
+        >
+          <View style={[styles.addButton, { backgroundColor: bgBtnPlus }]}>
+            <ThemedText type="sm" isSemiBold={true} colorName="secondary" darkColor="#fff">
+              {" "}
+              Nova viagem{" "}
+            </ThemedText>
+            <Ionicons name="add" size={40} color={btnPlus} />
+          </View>
+        </Pressable>
+
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Header>
             <View style={styles.nameTitle}>
@@ -252,6 +268,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  addButtonContainer: {
+    position: "absolute",
+    bottom: 130,
+    right: 20,
+    zIndex: 999,
+  },
+  addButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+  },
   scrollContainer: {
     paddingVertical: 24, // Espaçamento vertical para o conteúdo não colar no topo/fundo
     paddingHorizontal: 16, // Espaçamento horizontal nas laterais da tela
@@ -270,7 +308,6 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     paddingVertical: 20,
-    paddingHorizontal: 10,
   },
   containerPopularTrips: {
     display: "flex",
