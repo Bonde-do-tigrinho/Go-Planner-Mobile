@@ -9,10 +9,12 @@ interface headerProps {
   children: React.ReactNode
 }
 
+
 export default function Header(props: headerProps) {
   const iconColor = useThemeColor({}, "textSecondary");
+  const borderColor = useThemeColor({}, "borderPrimary");
   return (
-    <ThemedView style={styles.container} bgName="bgPrimary">
+    <ThemedView style={[styles.container, {borderColor: borderColor}]} bgName="bgPrimary">
       {props.children}
       <ThemedView bgName="bgPrimary" style={styles.iconsContainer}>
         <BtnThemeToggleButton />
@@ -29,16 +31,17 @@ export default function Header(props: headerProps) {
     </ThemedView>
   );
 }
+
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     paddingVertical: 10, // aumentei um pouco para dar mais espaço
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
     width: "100%",
   },
   iconsContainer: {

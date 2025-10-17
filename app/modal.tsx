@@ -1,135 +1,45 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import Modal from 'react-native-modal';
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { Platform, StyleSheet, TouchableOpacity } from "react-native";
 
-const colors = {
-    primary: '#FF5733',
-    secondary: '#C70039', // Adicionei uma segunda cor para o gradiente
-    text: '#333333',
-    textMuted: '#888888',
-    white: '#FFFFFF',
-};
+export default function ModalScreen() {
+  return (
+    <ThemedView bgName="bgPrimary" style={styles.container}>
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={() => router.back()}
+      >
+        <Ionicons name="close" size={28} color="#666" />
+      </TouchableOpacity>
 
-type SheetModalProps = {
-    visible: boolean;
-    onClose: () => void;
-    title: string;
-    children: React.ReactNode;
-};
+      <ThemedText colorName="textPrimary" type="lg" style={styles.title}>
+        Nova Viagem
+      </ThemedText>
 
-const SheetModal = ({ visible, onClose, title, children }: SheetModalProps) => {
-    return (
-        <Modal
-            isVisible={visible} // 2. A prop agora se chama 'isVisible'
-            onBackdropPress={onClose} // Fecha o modal ao clicar no fundo
-            onBackButtonPress={onClose} // Fecha o modal ao clicar no botão "voltar" do Android
-            animationIn="slideInUp" // 3. Animação de entrada
-            animationOut="fadeOut" // 4. Animação de saída
-            animationInTiming={500} // Duração da entrada
-            animationOutTiming={1} // Duração da saída
-            backdropTransitionInTiming={0} // Duração do fade do fundo na entrada
-            backdropTransitionOutTiming={1} // Duração do fade do fundo na saída
-            useNativeDriver={true}
-            style={styles.modal} //O estilo do container principal é passado aqui
-        >
-            <LinearGradient
-                colors={[colors.primary, colors.secondary]}
-                style={styles.gradientBorderContainer}
-            >
-                <View style={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>{title}</Text>
-                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                        <Ionicons name="close" size={28} color={colors.textMuted} />
-                    </TouchableOpacity>
+      {/* Aqui você pode adicionar os campos do formulário para criar uma nova viagem */}
 
-                    {children}
-
-                    <View style={styles.modalButtonContainer}>
-                        <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                            <Text style={styles.cancelButtonText}>Cancelar</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.confirmButton} onPress={onClose}>
-                            <Text style={styles.confirmButtonText}>Confirmar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </LinearGradient>
-        </Modal>
-    );
-};
+      <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
+    </ThemedView>
+  );
+}
 
 const styles = StyleSheet.create({
-    // O 'modalOverlay' foi substituído por um estilo 'modal' mais simples
-    modal: {
-        justifyContent: 'flex-end',
-        margin: 0, // Remove margens padrão para ocupar a tela toda
-    },
-    gradientBorderContainer: {
-        padding: 1.5,// Espessura da borda
-        // Adiciona um pouco de padding para o conteúdo não encostar na borda
-        borderTopRightRadius: 22,
-        borderTopLeftRadius: 22,
-    },
-    modalContainer: {
-        backgroundColor: 'white',
-        padding: 22,
-        borderTopRightRadius: 20,
-        borderTopLeftRadius: 20,
-        alignItems: 'center',
-    },
-
-    modalTitle:
-    {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        color: colors.text,
-    },
-
-    closeButton: 
-    { position: 'absolute',
-      top: 15,
-      right: 15,
-    },
-    modalButtonContainer:
-     { 
-        flexDirection: 'row',
-         justifyContent: 'space-between',
-          width: '100%',
-           marginTop: 20,
-     },
-    cancelButton:
-     { flex: 1,
-         backgroundColor: colors.secondary,
-         paddingVertical: 16,
-         borderRadius: 12,
-         alignItems: 'center',
-         borderWidth: 1,
-         borderColor: colors.secondary,
-         marginRight: 28,
-     },
-    cancelButtonText:
-     { color: colors.white,
-         fontSize: 16,
-          fontWeight: 'bold',
-    },
-    confirmButton:
-    { flex: 1,
-         backgroundColor: colors.primary,
-         paddingVertical: 16,
-         borderRadius: 12,
-         alignItems: 'center',
-         },
-    confirmButtonText: 
-    {    color: colors.white,
-         fontSize: 16,
-         fontWeight: 'bold',
-    },
-
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  closeButton: {
+    position: "absolute",
+    right: 20,
+    top: 20,
+    zIndex: 1,
+  },
+  title: {
+    textAlign: "center",
+    marginTop: 60,
+    marginBottom: 20,
+  },
 });
-
-
-
-export default SheetModal;
