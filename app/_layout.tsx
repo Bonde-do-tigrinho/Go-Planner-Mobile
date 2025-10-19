@@ -6,6 +6,8 @@ import 'react-native-reanimated';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ThemedText } from '@/components/themed-text';
+import { Ionicons } from '@expo/vector-icons';
 
 // Impede que a tela de splash se esconda automaticamente antes de estarmos prontos
 SplashScreen.preventAutoHideAsync();
@@ -24,6 +26,16 @@ function RootLayoutNav() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true, }} />
+          <Stack.Screen 
+            name="createTrip" 
+            options={{ 
+              headerTitle: () => (
+                <ThemedText  type='title' colorName='textPrimary' isSemiBold={true}>
+                  Criação da viagem
+                  <Ionicons name="ellipse" size={9} color="#FF5733" />
+                </ThemedText>
+              ), 
+              headerShown: true, }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
