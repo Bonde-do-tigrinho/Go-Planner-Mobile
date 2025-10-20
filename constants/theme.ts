@@ -53,24 +53,19 @@ export const Colors = {
 };
 
 export const Fonts = Platform.select({
-  ios: {
-    sans: 'Inter',
+   ios: {
+    sans: 'Inter-Regular',
     sansSemiBold: 'Inter-SemiBold',
     sansBold: 'Inter-Bold',
-    serif: 'ui-serif',
-    mono: 'ui-monospace',
+  },
+  android: {
+    sans: 'Inter-Regular',
+    sansSemiBold: 'Inter-SemiBold',
+    sansBold: 'Inter-Bold',
   },
   default: {
-    sans: 'Inter',
+    sans: 'Inter-Regular',
     sansSemiBold: 'Inter-SemiBold',
     sansBold: 'Inter-Bold',
-    serif: 'ui-serif',
-    mono: 'ui-monospace',
-  },
-  web: {
-    sans: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });

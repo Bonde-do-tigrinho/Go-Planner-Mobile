@@ -185,16 +185,15 @@ export default function HomeScreen() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "Todas":
-        return <ListTrips userTrips={userTrips} />; // Continua funcionando perfeitamente
-      // ... outros casos
-    }
+        return <ListTrips userTrips={userTrips} />; 
   };
+}
   return (
     <>
       <ThemedView style={styles.container} bgName="bgPrimary">
         <Pressable
           style={styles.addButtonContainer}
-          onPress={() => router.push("/modal")}
+          onPress={() => router.push("/createTrip")}
         >
           <View style={[styles.addButton, { backgroundColor: bgBtnPlus }]}>
             <ThemedText type="sm" isSemiBold={true} colorName="secondary" darkColor="#fff">

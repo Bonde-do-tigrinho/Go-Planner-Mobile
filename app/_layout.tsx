@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { Stack, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
@@ -9,13 +9,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ThemedText } from '@/components/themed-text';
 import { Ionicons } from '@expo/vector-icons';
 
-// Impede que a tela de splash se esconda automaticamente antes de estarmos prontos
 SplashScreen.preventAutoHideAsync();
-
-/**
- * Componente que renderiza a navegação principal.
- * Ele só é chamado DEPOIS que as fontes foram carregadas.
- */
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
@@ -23,59 +17,57 @@ function RootLayoutNav() {
   return (
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true, }} />
-          <Stack.Screen 
-            name="createTrip" 
-            options={{ 
-              headerTitle: () => (
-                <ThemedText  type='title' colorName='textPrimary' isSemiBold={true}>
-                  Criação da viagem
-                  <Ionicons name="ellipse" size={9} color="#FF5733" />
-                </ThemedText>
-              ), 
-              headerShown: true, }} />
-        </Stack>
-        <StatusBar style="auto" />
+        <>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)/index" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
+            <Stack.Screen 
+              name="createTrip" 
+              options={{ 
+                headerTitle: () => (
+                  <ThemedText type='subtitle' colorName='textPrimary' isSemiBold={true} style={{left: -20}}>
+                    Criação da viagem
+                    <Ionicons name="ellipse" size={9} color="#FF5733" />
+                  </ThemedText>
+                ), 
+                headerShown: true 
+              }} 
+            />
+          </Stack>
+          <StatusBar style="auto" />
+        </>
       </ThemeProvider>
     </SafeAreaProvider>
   );
 }
 
-/**
- * Componente raiz que lida com o carregamento de assets (fontes).
- */
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    'Inter': require('../assets/fonts/Inter_18pt-Regular.ttf'),
-    'Inter-SemiBold': require('../assets/fonts/Inter_18pt-SemiBold.ttf'),
-    'Inter-Bold': require('../assets/fonts/Inter_18pt-Bold.ttf'),
+    'Inter-Regular': Inter_400Regular,
+    'Inter-SemiBold': Inter_600SemiBold,
+    'Inter-Bold': Inter_700Bold,
   });
-  console.log('Font Loaded Status:', loaded);
-  console.log('Font Error:', error);
-  // Expo Router usa useEffect para capturar erros durante o carregamento
+
+  console.log('✅ Fontes carregadas:', loaded);
+  console.log('❌ Erro ao carregar:', error);
+
   useEffect(() => {
-    if (error) throw error;
+    if (error) {
+      console.error('Erro detalhado:', error);
+      throw error;
+    }
   }, [error]);
 
   useEffect(() => {
     if (loaded) {
-      // DICA DE SÊNIOR: Adicione um atraso para testar
-      console.log("Fontes carregadas. Esperando 3 segundos para esconder a splash...");
-      setTimeout(() => {
-        SplashScreen.hideAsync();
-        console.log("Splash screen escondida.");
-      }, 3000); // Atraso de 3000ms (3 segundos)
+      console.log("🎉 Todas as fontes foram carregadas com sucesso!");
+      SplashScreen.hideAsync();
     }
   }, [loaded]);
 
-  // Se as fontes ainda não foram carregadas, não renderiza nada.
-  // A tela de splash continuará visível.
-  if (!loaded) {
+  if (!loaded && !error) {
     return null;
   }
 
-  // Quando as fontes estiverem carregadas, renderiza o componente de navegação.
   return <RootLayoutNav />;
 }
