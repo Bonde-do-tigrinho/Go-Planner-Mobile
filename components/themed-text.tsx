@@ -34,9 +34,6 @@ export function ThemedText({
   } else if (isSemiBold || type === "subtitle") {
     fontFamily = Fonts.sansSemiBold;
   }
-  
-  // Debug - remova depois de testar
-  console.log('🔤', { type, isSemiBold, isBold, fontFamily });
 
   return (
     <Text

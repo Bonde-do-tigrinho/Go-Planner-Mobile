@@ -1,4 +1,3 @@
-// components/ui/ThemedInput.tsx
 import React, { useState } from 'react';
 import {
   TextInput,
@@ -7,7 +6,7 @@ import {
   NativeSyntheticEvent,
   TextInputFocusEventData,
   TextInputProps,
-  Pressable, // Importar Pressable
+  Pressable,
 } from 'react-native';
 import { ThemedView, ThemedViewProps } from './themed-view';
 import { ThemedText } from './themed-text';
@@ -25,8 +24,9 @@ type ThemedInputProps = Omit<TextInputProps, 'onFocus' | 'onBlur'> & {
   textInputName?: keyof typeof Colors.light & keyof typeof Colors.dark;
   onFocus?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void;
   onBlur?: (e: NativeSyntheticEvent<TextInputFocusEventData>) => void;
-  // NOVA PROP: Para indicar se é um campo de senha
   isPassword?: boolean;
+  // --- MUDANÇA 1: Simplificado para 'multiline' para bater com a prop nativa ---
+  multiline?: boolean; 
 };
 
 export function ThemedInput({
@@ -38,13 +38,13 @@ export function ThemedInput({
   error,
   onFocus,
   onBlur,
-  textInputName = 'textSecondary', // Mudei o padrão para algo mais lógico para texto
-  isPassword = false, // NOVA PROP: Padrão é false
-  secureTextEntry, // Removido de textInputProps para ser controlado internamente
+  textInputName = 'textSecondary',
+  multiline = false, // <-- Renomeado
+  isPassword = false,
+  secureTextEntry,
   ...textInputProps
 }: ThemedInputProps) {
   const [isFocused, setIsFocused] = useState(false);
-  // NOVO ESTADO: Para controlar a visibilidade da senha
   const [showPassword, setShowPassword] = useState(false);
 
   const activeBorderName = isFocused ? 'primary' : 'borderPrimary';
@@ -56,46 +56,59 @@ export function ThemedInput({
 
   const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setIsFocused(true);
-    if (onFocus) {
-      onFocus(e);
-    }
+    if (onFocus) onFocus(e);
   };
   const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
     setIsFocused(false);
-    if (onBlur) {
-      onBlur(e);
-    }
+    if (onBlur) onBlur(e);
   };
 
-  // Função para alternar a visibilidade da senha
   const toggleShowPassword = () => {
-     setShowPassword(prev => !prev); 
+    setShowPassword(prev => !prev);  
   };
+
+  // --- MUDANÇA 2: Lógica de estilo movida para cá para maior clareza ---
+  // Estilo dinâmico para o contêiner
+  const containerStyle = [
+    styles.container,
+    error && styles.containerError,
+    // Se for multiline, alinha os itens ao topo
+    multiline && styles.multilineContainer,
+  ];
+
+  // Estilo dinâmico para o TextInput
+  const textInputStyle = [
+    styles.input,
+    { color: textColor },
+    // Se for multiline, aplica os estilos de área de texto
+    multiline && styles.multilineInput,
+  ];
 
   return (
     <View style={styles.wrapper}>
       {label && <ThemedText colorName="textPrimary" style={styles.label}>{label}</ThemedText>}
       <ThemedView
-        style={[styles.container, error && styles.containerError]}
+        style={containerStyle}
         bgName="bgPrimary"
         borderName={defaultBorderName}
         borderWidth={1}
         {...containerProps}
       >
-        {/* Ícone normal (se existir) */}
-        {icon && <Ionicons name={icon} size={20} color={iconColor} style={styles.icon} />}
+        {/* --- MUDANÇA 3: Ícone só aparece se NÃO for multiline --- */}
+        {icon && !multiline && <Ionicons name={icon} size={20} color={iconColor} style={styles.icon} />}
 
         <TextInput
-          style={[styles.input, { color: textColor }]}
+          style={textInputStyle}
           placeholderTextColor={placeholderColor}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          // Lógica para secureTextEntry
-          secureTextEntry={isPassword && !showPassword} // Apenas segura se for senha E não estiver mostrando
+          multiline={multiline}
+          secureTextEntry={isPassword && !showPassword}
           {...textInputProps}
         />
 
-        {isPassword && (
+        {/* --- MUDANÇA 4: Ícone de senha só aparece se for senha E NÃO for multiline --- */}
+        {isPassword && !multiline && (
           <Pressable onPress={toggleShowPassword} style={styles.passwordToggle}>
             <Ionicons
               name={showPassword ? 'eye-off-outline' : 'eye-outline'}
@@ -113,7 +126,7 @@ export function ThemedInput({
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
-    marginBottom: 16,
+    // marginBottom removido para ser controlado pelo gap do formulário pai
   },
   label: {
     marginBottom: 8,
@@ -122,9 +135,13 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center', // Padrão para inputs de uma linha
     borderRadius: 10,
     paddingHorizontal: 12,
+  },
+  // --- MUDANÇA 5: Novo estilo para o contêiner multiline ---
+  multilineContainer: {
+    alignItems: 'flex-start', // Alinha o ícone (se existisse) e o texto no topo
   },
   containerError: {
     borderWidth: 1.5,
@@ -138,10 +155,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   passwordToggle: {
-    paddingLeft: 8, // Espaçamento entre o input e o ícone de olho
+    paddingLeft: 8,
   },
   errorText: {
     marginTop: 4,
     fontSize: 12,
+  },
+  multilineInput: {
+    height: 120, // Altura inicial para a área de texto
+    textAlignVertical: 'top', // Alinha o texto no topo no Android
+    paddingVertical: 12, // Adiciona um padding vertical
   },
 });

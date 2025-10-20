@@ -1,23 +1,22 @@
 import React, { useState } from 'react';
 import { 
   View, 
-  Text, 
-  TextInput, 
   StyleSheet, 
   TouchableOpacity, 
   Image, 
-  Platform 
+  Platform, 
+  Text
 } from 'react-native';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { CreateTripFormData } from '../../app/createTrip'; 
 
-// Importa os pacotes de seleção de data e imagem
+// Componentes Nativos e Customizados
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
-// Componentes de ícone simples para manter o código limpo
-const CalendarIcon = () => <Text>📅</Text>;
-const CloudIcon = () => <Text>☁️</Text>;
+import { ThemedText } from '../themed-text';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { ThemedInput } from '../themed-input'; // <-- Importado
 
 type TripDataFormProps = {
   control: Control<CreateTripFormData>;
@@ -26,11 +25,9 @@ type TripDataFormProps = {
 
 export function TripDataForm({ control, errors }: TripDataFormProps) {
   
-  // Estado para controlar a visibilidade dos seletores de data
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
-  // Função para abrir a galeria e selecionar uma imagem
   const pickImage = async (onChange: (uri: string) => void) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -41,90 +38,89 @@ export function TripDataForm({ control, errors }: TripDataFormProps) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [16, 9],
+      aspect: [1, 1],
       quality: 1,
     });
 
     if (!result.canceled) {
-      // Atualiza o formulário com a URI da imagem selecionada
       onChange(result.assets[0].uri);
     }
   };
 
+  const iconColor = useThemeColor({}, "textTerciary");
+  const borderColor = useThemeColor({}, "borderPrimary");
   return (
     <View style={formStyles.formContainer}>
+      
       {/* 1. Nome da sua viagem */}
-      <Text style={formStyles.label}>Nome da sua viagem:</Text>
       <Controller
         control={control}
         name="name"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            style={[ formStyles.input, errors.name && formStyles.inputError ]}
+          <ThemedInput
+            label="Nome da sua viagem:"
             placeholder="Ex: Viagem para o Japão"
+            icon="airplane-outline"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
+            error={errors.name?.message}
+            returnKeyType="next"
           />
         )}
       />
-      {errors.name && (
-        <Text style={formStyles.errorText}>{errors.name.message}</Text>
-      )}
 
       {/* 2. Local de partida */}
-      <Text style={formStyles.label}>Local de partida:</Text>
       <Controller
         control={control}
         name="departure_location"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            style={[ formStyles.input, errors.departure_location && formStyles.inputError ]}
-            placeholder="Ex: São Paulo, Brasil"
+          <ThemedInput
+            label="Local de partida:"
+            placeholder="São Paulo, Brasil"
+            icon="location-outline"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
+            error={errors.departure_location?.message}
+            returnKeyType="next"
           />
         )}
       />
-      {errors.departure_location && (
-        <Text style={formStyles.errorText}>{errors.departure_location.message}</Text>
-      )}
-
+      
       {/* 3. Local de destino */}
-      <Text style={formStyles.label}>Local de destino:</Text>
       <Controller
         control={control}
         name="destination"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            style={[ formStyles.input, errors.destination && formStyles.inputError ]}
+          <ThemedInput
+            label="Local de destino:"
             placeholder="Ex: Tóquio, Japão"
+            icon="flag-outline"
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
+            error={errors.destination?.message}
+            returnKeyType="next"
           />
         )}
       />
-      {errors.destination && (
-        <Text style={formStyles.errorText}>{errors.destination.message}</Text>
-      )}
 
-      {/* 4. Datas (Início e Fim) */}
+      {/* 4. Datas (Início e Fim) - Mantido como TouchableOpacity */}
       <View style={formStyles.dateRow}>
-        <View style={formStyles.dateField}>
-          <Text style={formStyles.label}>Início da viagem:</Text>
+        <View style={[formStyles.dateField,]}>
+          <ThemedText colorName='textPrimary' type='default'>Início da viagem:</ThemedText>
           <Controller
             control={control}
             name="start_date"
             render={({ field: { onChange, value } }) => (
               <>
                 <TouchableOpacity 
-                  style={[formStyles.dateInput, errors.start_date && formStyles.inputError]} 
+                  style={[formStyles.dateInput,  {borderColor: borderColor}, errors.start_date && formStyles.inputError]} 
                   onPress={() => setShowStartDatePicker(true)} 
                 >
-                  <CalendarIcon />
-                  <Text>{value ? value.toLocaleDateString('pt-BR') : "Selecione..."}</Text>
+                  <Ionicons name='calendar-outline' size={24} color={iconColor} />
+                  <ThemedText colorName='textTerciary' type='default'>{value ? value.toLocaleDateString('pt-BR') : "Selecione..."}</ThemedText>
                 </TouchableOpacity>
 
                 {showStartDatePicker && (
@@ -149,18 +145,18 @@ export function TripDataForm({ control, errors }: TripDataFormProps) {
         </View>
 
         <View style={formStyles.dateField}>
-          <Text style={formStyles.label}>Fim da viagem:</Text>
+          <ThemedText colorName='textPrimary' type='default'>Fim da viagem:</ThemedText >
           <Controller
             control={control}
             name="end_date"
             render={({ field: { onChange, value } }) => (
               <>
                 <TouchableOpacity 
-                  style={[formStyles.dateInput, errors.end_date && formStyles.inputError]} 
+                  style={[formStyles.dateInput,  {borderColor: borderColor}, errors.end_date && formStyles.inputError]} 
                   onPress={() => setShowEndDatePicker(true)}
                 >
-                  <CalendarIcon />
-                  <Text>{value ? value.toLocaleDateString('pt-BR') : "Selecione..."}</Text>
+                  <Ionicons name='calendar-outline' size={24} color={iconColor} />
+                  <ThemedText colorName='textTerciary' type='default'>{value ? value.toLocaleDateString('pt-BR') : "Selecione..."}</ThemedText>
                 </TouchableOpacity>
 
                 {showEndDatePicker && (
@@ -186,39 +182,37 @@ export function TripDataForm({ control, errors }: TripDataFormProps) {
       </View>
 
       {/* 5. Descrição */}
-      <Text style={formStyles.label}>Descrição:</Text>
       <Controller
         control={control}
         name="description"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            style={[formStyles.input, formStyles.multilineInput]}
+          <ThemedInput
+            label="Descrição:"
+            placeholder="Detalhes sobre a viagem, como roteiros, dicas, etc."
             onBlur={onBlur}
             onChangeText={onChange}
             value={value}
-            multiline
-            numberOfLines={4}
-            placeholder="Detalhes sobre a viagem, como roteiros, dicas, etc."
+            error={errors.description?.message}
+            multiline={true}
+            numberOfLines={5}
           />
         )}
       />
-
-      {/* 6. Anexar Imagem */}
-      <Text style={formStyles.label}>Anexe uma imagem do local</Text>
+      <ThemedText colorName='textPrimary' type='default'>Anexe uma imagem do local</ThemedText>
       <Controller
         control={control}
         name="image_uri"
         render={({ field: { onChange, value } }) => (
           <TouchableOpacity 
-            style={[formStyles.imagePicker, errors.image_uri && formStyles.inputError]}
+            style={[formStyles.imagePicker, {borderColor: borderColor}, errors.image_uri && formStyles.inputError]}
             onPress={() => pickImage(onChange)}
           >
             {value ? (
               <Image source={{ uri: value }} style={formStyles.previewImage} />
             ) : (
               <>
-                <CloudIcon />
-                <Text>Clique para enviar uma imagem</Text>
+                <Ionicons name="cloud-upload-outline" size={24} color={iconColor} />
+                <ThemedText colorName='textSecondary' type='default' style={{textAlign:"center"}}>Clique para enviar uma imagem</ThemedText >
               </>
             )}
           </TouchableOpacity>
@@ -231,31 +225,10 @@ export function TripDataForm({ control, errors }: TripDataFormProps) {
 const formStyles = StyleSheet.create({
   formContainer: {
     width: '100%',
-    gap: 10,
-  },
-  label: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    minHeight: 50,
-  },
-  multilineInput: {
-    height: 120,
-    textAlignVertical: 'top',
-    paddingVertical: 12,
+    gap: 16,
   },
   dateInput: {
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
     borderRadius: 8,
     paddingHorizontal: 16,
     minHeight: 50,
@@ -270,30 +243,32 @@ const formStyles = StyleSheet.create({
   },
   dateField: {
     flex: 1,
+    gap: 8,
   },
   imagePicker: {
-    height: 150,
+    height: 160,
+    width: 160,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    alignSelf: 'center',
     borderStyle: 'dashed',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
     overflow: 'hidden',
+    gap: 8,
   },
   previewImage: {
     width: '100%',
     height: '100%',
   },
   inputError: {
-    borderColor: '#EF4444', // Vermelho mais suave
-    borderWidth: 1.5,
+    borderColor: '#EF4444', 
   },
-  errorText: {
+   errorText: {
     color: '#EF4444',
     fontSize: 12,
-    marginTop: -8,
+    marginTop: 4,
     marginBottom: 8,
   },
 });
+
