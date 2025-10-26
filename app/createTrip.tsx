@@ -1,11 +1,12 @@
 import TabSelector from "@/components/tab-selector"
 import { ThemedView } from "@/components/themed-view"
 import { useState } from "react"
-import { useForm } from "react-hook-form" 
+import { useForm, useWatch } from "react-hook-form" 
 import { ScrollView, StyleSheet, View, Button, Text, TextInput, TouchableOpacity } from "react-native"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { TripDataForm } from "@/components/createTrip/TripDataForm"
+import TripActivities from "@/components/createTrip/TripActivities"
 
 const guestSchema = z.object({
   id: z.string(), 
@@ -82,7 +83,10 @@ export default function CreateTrip(){
       guests: [],
     }
   });
-  
+
+  const destination = useWatch({ control, name: 'destination' });
+  const startDate = useWatch({ control, name: 'start_date' });
+  const endDate = useWatch({ control, name: 'end_date' });
   // A função de submit agora recebe os dados 100% tipados e validados
   const handleSaveTrip = (data: CreateTripFormData) => {
     console.log("Dados da viagem validados:", data)
@@ -93,11 +97,18 @@ export default function CreateTrip(){
   const renderTabContent = () => {
     switch(activeTab){
       case "Dados":
-        // --- 4. PASSAR 'errors' PARA O COMPONENTE FILHO ---
-        return <TripDataForm control={control} errors={errors} />
+        return <TripDataForm 
+                  control={control} 
+                  errors={errors} 
+                />
       case "Atividades":
-        // (Aqui você passaria o control e errors para o 'TripActivitiesForm')
-        return <View><Text>Conteúdo da Aba Atividades</Text></View>
+        return  <TripActivities 
+                  control={control}
+                  errors={errors}
+                  destination={destination}
+                  startDate={startDate}
+                  endDate={endDate}
+                />
       case "Convidar":
          // (Aqui você passaria o control e errors para o 'TripGuestsForm')
         return <View><Text>Conteúdo da Aba Convidar</Text></View>
