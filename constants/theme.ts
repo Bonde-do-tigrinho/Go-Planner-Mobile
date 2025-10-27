@@ -13,8 +13,8 @@ export const Colors = {
     textSecondary: '#71717A',  
     textTerciary: '#A1A1AA',  
     bgPrimary: '#fff',
-    bgSecondary: '#000 ',
-    bgTerciary: '#fff',
+    bgSecondary: '#eee ',
+    bgTerciary: '#ddd',
     borderPrimary: "#ddd",
     tabActive: "#FFE3DD",
     tabTextActive: "#FF5733",
@@ -26,7 +26,7 @@ export const Colors = {
     tabIconSelected: tintColorLight,
     notification: notification,
     btnPlus: "#C70039",
-    bgBtnPlus: "#fff"
+    bgBtnPlus: "#fff",
   },
   dark: {
     primary: '#FF5733',
@@ -37,6 +37,7 @@ export const Colors = {
     textTerciary:  '#71717A', 
     bgPrimary: '#151718',
     bgSecondary: '#333',
+    bgTerciary: '#222',
     borderPrimary: "#333",
     tabActive: "#FF5733",
     tabTextActive: "#FFE3DD",
@@ -48,7 +49,8 @@ export const Colors = {
     tabIconSelected: tintColorDark,
     notification: notification,
     btnPlus: "#fff",
-    bgBtnPlus: "#333"
+    bgBtnPlus: "#333",
+    
   },
 };
 
