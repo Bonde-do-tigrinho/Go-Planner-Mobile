@@ -2,11 +2,15 @@ import TabSelector from "@/components/tab-selector"
 import { ThemedView } from "@/components/themed-view"
 import { useState } from "react"
 import { useForm, useWatch } from "react-hook-form" 
-import { ScrollView, StyleSheet, View, Button, Text, TextInput, TouchableOpacity } from "react-native"
+import { ScrollView, StyleSheet, View, Button, Text, TextInput, TouchableOpacity, Pressable } from "react-native"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { TripDataForm } from "@/components/createTrip/TripDataForm"
 import TripActivities from "@/components/createTrip/TripActivities"
+import { ThemedText } from "@/components/themed-text"
+import { Ionicons } from '@expo/vector-icons'
+import { useThemeColor } from '@/hooks/use-theme-color'
+import SheetModal from "@/components/modal"
 
 const guestSchema = z.object({
   id: z.string(), 
@@ -17,13 +21,12 @@ const guestSchema = z.object({
 const activitySchema = z.object({
   id: z.string().optional(),
   title: z.string().min(3, { message: "A atividade deve ter um nome." }),
-  occurs_at: z.date({ message: "Defina a data e hora." }), // <-- MUDANÇA AQUI
+  occurs_at: z.date({ message: "Defina a data e hora." }),
   is_completed: z.boolean(),
 });
 
 export const createTripSchema = z
   .object({
-    // Aba "Dados"
     name: z
       .string()
       .min(3, { message: "O nome da viagem deve ter no mínimo 3 caracteres." }),
@@ -50,8 +53,6 @@ export const createTripSchema = z
     if (data.start_date && data.end_date) {
       return data.end_date > data.start_date;
     }
-    // Se uma das datas não estiver definida, a validação 'required' (message) acima
-    // já terá pego o erro, então podemos retornar true aqui.
     return true; 
   }, {
     message: "A data de fim deve ser após a data de início.",
@@ -64,16 +65,21 @@ export default function CreateTrip(){
   const tabs = ["Dados", "Atividades", "Convidar"]
   
   const [activeTab, setActiveTab] = useState(tabs[0])
+  const [isModalVisible, setModalVisible] = useState(false);
+  
+  const btnPlus = useThemeColor({}, "btnPlus");
+  const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
+
+  const toggleModalVisible = () => {
+    setModalVisible(!isModalVisible)
+  }
 
   const { 
     control, 
     handleSubmit,
-    // Pega o 'formState' para acessar os 'errors'
     formState: { errors } 
   } = useForm<CreateTripFormData>({
-    // Conecta o Zod ao React Hook Form
     resolver: zodResolver(createTripSchema),
-    // Define valores padrão, especialmente para os 'field arrays'
     defaultValues: {
       name: "",
       departure_location: "",
@@ -87,11 +93,9 @@ export default function CreateTrip(){
   const destination = useWatch({ control, name: 'destination' });
   const startDate = useWatch({ control, name: 'start_date' });
   const endDate = useWatch({ control, name: 'end_date' });
-  // A função de submit agora recebe os dados 100% tipados e validados
+
   const handleSaveTrip = (data: CreateTripFormData) => {
     console.log("Dados da viagem validados:", data)
-    // Se chegou aqui, os dados passaram na validação do Zod
-    // (Lógica de API/mutati on)
   }
 
   const renderTabContent = () => {
@@ -110,16 +114,16 @@ export default function CreateTrip(){
                   endDate={endDate}
                 />
       case "Convidar":
-         // (Aqui você passaria o control e errors para o 'TripGuestsForm')
         return <View><Text>Conteúdo da Aba Convidar</Text></View>
     }
   }
  
   return(
-    <ThemedView style={styles.container}  bgName="bgPrimary">
+    <ThemedView style={styles.mainContainer}  bgName="bgPrimary">
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <TabSelector
           activeTab={activeTab}
@@ -131,21 +135,44 @@ export default function CreateTrip(){
       
         <TouchableOpacity 
           style={styles.saveButton} 
-          // O handleSubmit aqui vai primeiro rodar o Zod resolver
-          // e SÓ VAI chamar 'handleSaveTrip' se tudo for válido.
           onPress={handleSubmit(handleSaveTrip)}
         >
           <Text style={styles.saveButtonText}>Salvar</Text>
         </TouchableOpacity>
 
       </ScrollView>
+
+      {/* FAB FIXO - FORA DO SCROLLVIEW */}
+      {activeTab === "Atividades" && (
+        <Pressable
+          style={styles.fabContainer}
+          onPress={() => toggleModalVisible()}
+        >
+          <View style={[styles.fab, { backgroundColor: bgBtnPlus }]}>
+            <ThemedText type="sm" isSemiBold={true} colorName="secondary" darkColor="#fff">
+              Nova viagem
+            </ThemedText>
+            <Ionicons name="add" size={40} color={btnPlus} />
+          </View>
+        </Pressable>
+      )}
+
+      <SheetModal
+        visible={isModalVisible}
+        onClose={toggleModalVisible}
+        title="Criar nova"
+      >
+        <Text>Modal de atividades</Text>
+      </SheetModal>
     </ThemedView>
   )
 }
 
-// (Estilos permanecem os mesmos)
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  mainContainer: { 
+    flex: 1,
+    position: 'relative'
+  },
   scrollContainer: {
     paddingVertical: 16,
     paddingHorizontal: 16,
@@ -163,5 +190,27 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-  }
+  },
+  fabContainer: {
+    position: "absolute",
+    bottom: 100,
+    right: 16,
+    zIndex: 999,
+  },
+  fab: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+  },
 });
