@@ -1,6 +1,7 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
+import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { ThemedView } from "./themed-view";
-import { useThemeColor } from "@/hooks/use-theme-color";
 
 
 const colors = {
@@ -48,8 +49,9 @@ export default function TabSelector({
 }
 const styles = StyleSheet.create({
   container: {
-    paddingLeft: 0, // Começa com o mesmo padding do header
+    paddingLeft: 0, 
     paddingVertical: 15,
+    width: "100%", // <-- Adicionei essa linha. Ela corrige o bug de proporção em profile.tsx.
   },
   tab: {
     paddingVertical: 8,
@@ -57,7 +59,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.tabInactive,
-    marginRight: 10, // Espaçamento entre os botões
+    marginRight: 10, 
   },
   activeTab: {
     borderWidth: 0
