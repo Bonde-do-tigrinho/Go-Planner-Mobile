@@ -2,6 +2,7 @@ import { ThemedView } from "@/components/themed-view";
 import { BtnThemeToggleButton } from "@/components/ui/btnToggleTheme";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import React from "react";
 import { Button, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

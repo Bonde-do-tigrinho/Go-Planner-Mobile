@@ -6,27 +6,40 @@ import ThemedTitle from "@/components/themed-title";
 import { ThemedView } from "@/components/themed-view";
 import { StatusBar } from "expo-status-bar";
 
-import { useState } from "react";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const tabs = ["Dados pessoais", "Histórico de viagem", "Configurações"];
-
   const [activeTab, setActiveTab] = useState(tabs[0]);
+  const router = useRouter(); 
+
+  const handleNavigateToNotifications = () => {
+    router.push("/notifications");
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "Dados pessoais":
-        return <Info />// Continua funcionando perfeitamente
-      // ... outros casos
+        return <Info />;
+      default:
+        return (
+          <ThemedView style={{ padding: 20, width: "100%" }}>
+            <ThemedText colorName="textPrimary">
+              Conteúdo de {activeTab}
+            </ThemedText>
+          </ThemedView>
+        );
     }
   };
 
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container} bgName="bgPrimary">
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Header>
+          <Header onNotificationPress={handleNavigateToNotifications}>
             <ThemedTitle ballColor="secondary" title="Perfil" />
           </Header>
           <TabSelector
@@ -38,21 +51,19 @@ export default function ProfileScreen() {
         </ScrollView>
       </ThemedView>
       <StatusBar style="auto" />
-    </>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-    justifyContent: "center",
-    alignItems: "center",
   },
   scrollContainer: {
-    paddingVertical: 24, // Espaçamento vertical para o conteúdo não colar no topo/fundo
-    paddingHorizontal: 16, // Espaçamento horizontal nas laterais da tela
+    width: "100%",
+    // alignItems: "center", // <-- ESTA LINHA É O PROBLEMA. REMOVA ELA.
+    gap: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
 });

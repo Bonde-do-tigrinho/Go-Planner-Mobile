@@ -8,7 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ThemedText } from '@/components/themed-text';
 import { Ionicons } from '@expo/vector-icons';
-
+import React from 'react';
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
@@ -33,6 +33,7 @@ function RootLayoutNav() {
                 headerShown: true 
               }} 
             />
+            <Stack.Screen name="notifications" options={{ headerShown: false }} />
           </Stack>
           <StatusBar style="auto" />
         </>
@@ -41,6 +42,9 @@ function RootLayoutNav() {
   );
 }
 
+/**
+ * Componente raiz que lida com o carregamento de assets.
+ */
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     'Inter-Regular': Inter_400Regular,
@@ -48,9 +52,7 @@ export default function RootLayout() {
     'Inter-Bold': Inter_700Bold,
   });
 
-  console.log('✅ Fontes carregadas:', loaded);
-  console.log('❌ Erro ao carregar:', error);
-
+  // Expo Router usa useEffect para capturar erros durante o carregamento
   useEffect(() => {
     if (error) {
       console.error('Erro detalhado:', error);
@@ -60,12 +62,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      console.log("🎉 Todas as fontes foram carregadas com sucesso!");
       SplashScreen.hideAsync();
     }
   }, [loaded]);
 
-  if (!loaded && !error) {
+  // Se as fontes ainda não foram carregadas, não renderiza nada.
+  if (!loaded) {
     return null;
   }
 
