@@ -6,15 +6,15 @@ import 'react-native-reanimated';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import React from 'react';
 
 // Impede que a tela de splash se esconda automaticamente antes de estarmos prontos
 SplashScreen.preventAutoHideAsync();
 
 /**
  * Componente que renderiza a navegação principal.
- * Ele só é chamado DEPOIS que as fontes foram carregadas.
+ * Ele só é chamado depois que as fontes foram carregadas.
  */
-
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
@@ -24,6 +24,8 @@ function RootLayoutNav() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true, }} />
+          {/* Adicionei essa linha pois ela corrige o bug de rota */}
+          <Stack.Screen name="notifications" options={{ headerShown: false }} />
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
@@ -32,7 +34,7 @@ function RootLayoutNav() {
 }
 
 /**
- * Componente raiz que lida com o carregamento de assets (fontes).
+ * Componente raiz que lida com o carregamento de assets.
  */
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -40,8 +42,7 @@ export default function RootLayout() {
     'Inter-SemiBold': require('../assets/fonts/Inter_18pt-SemiBold.ttf'),
     'Inter-Bold': require('../assets/fonts/Inter_18pt-Bold.ttf'),
   });
-  console.log('Font Loaded Status:', loaded);
-  console.log('Font Error:', error);
+
   // Expo Router usa useEffect para capturar erros durante o carregamento
   useEffect(() => {
     if (error) throw error;
@@ -49,17 +50,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loaded) {
-      // DICA DE SÊNIOR: Adicione um atraso para testar
-      console.log("Fontes carregadas. Esperando 3 segundos para esconder a splash...");
-      setTimeout(() => {
-        SplashScreen.hideAsync();
-        console.log("Splash screen escondida.");
-      }, 3000); // Atraso de 3000ms (3 segundos)
+      SplashScreen.hideAsync();
     }
   }, [loaded]);
 
   // Se as fontes ainda não foram carregadas, não renderiza nada.
-  // A tela de splash continuará visível.
   if (!loaded) {
     return null;
   }

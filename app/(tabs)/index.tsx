@@ -7,14 +7,22 @@ import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import React from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import GradientText from "@/components/GradientText"; // <-- Importando o componente GradientText
+
 
 export default function HomeScreen() {
   const btnPlus = useThemeColor({}, "btnPlus");
   const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
+  const routerInstance = useRouter(); 
+  const handleNavigateToNotifications = () => {
+    routerInstance.push("/notifications");
+  };
   const user = {
     name: "Nicolas Yanase",
     avatar: "https://avatars.githubusercontent.com/u/63155478?v=4",
@@ -190,7 +198,7 @@ export default function HomeScreen() {
     }
   };
   return (
-    <>
+    <SafeAreaView style={{ flex: 1 }}>
       <ThemedView style={styles.container} bgName="bgPrimary">
         <Pressable
           style={styles.addButtonContainer}
@@ -206,16 +214,13 @@ export default function HomeScreen() {
         </Pressable>
 
         <ScrollView contentContainerStyle={styles.scrollContainer}>
-          <Header>
+          <Header onNotificationPress={handleNavigateToNotifications}>
             <View style={styles.nameTitle}>
               <Image source={{ uri: user.avatar }} style={styles.avatar} />
 
-              <ThemedText colorName="primary" type="default">
+            <GradientText style={styles.gradientName}> {/* Adicionei um estilo */}
                 Olá, {user.name}
-              </ThemedText>
-              {/* <GradientText>
-              Olá, {user.name}
-            </GradientText> */}
+              </GradientText>
             </View>
           </Header>
           <ThemedView style={styles.mainContainer}>
@@ -255,7 +260,7 @@ export default function HomeScreen() {
         </ScrollView>
       </ThemedView>
       <StatusBar style="auto" />
-    </>
+    </SafeAreaView>
   );
 }
 
@@ -305,6 +310,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     paddingVertical: 4,
+  },
+  gradientName: { // <-- Adicionei esse estilo
+    fontSize: 18, // Tamanho 'default' do ThemedText
+    lineHeight: 24, // LineHeight 'default' do ThemedText
   },
   mainContainer: {
     paddingVertical: 20,

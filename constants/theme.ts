@@ -24,7 +24,8 @@ export const Colors = {
     icon: '#aaa',
     tabIconDefault: '#687076',
     tabIconSelected: tintColorLight,
-    notification: notification,
+    btnAccept: '#FFE2DC',
+    btnDecline: '#FFD6E2',
     btnPlus: "#C70039",
     bgBtnPlus: "#fff"
   },
@@ -46,7 +47,8 @@ export const Colors = {
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
-    notification: notification,
+    btnAccept: '#3D221D',
+    btnDecline: '#3A1320',
     btnPlus: "#fff",
     bgBtnPlus: "#333"
   },
