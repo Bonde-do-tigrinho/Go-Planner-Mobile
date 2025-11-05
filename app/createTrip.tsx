@@ -22,6 +22,8 @@ import {
   View,
 } from "react-native";
 import { z } from "zod";
+import React from "react";
+
 
 const guestSchema = z.object({
   id: z.string(),
