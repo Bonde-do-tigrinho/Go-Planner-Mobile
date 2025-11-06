@@ -42,7 +42,7 @@ export default function Header(props: HeaderProps) {
           >
             <Ionicons
               name="notifications-outline"
-              size={24}
+              size={20}
               color={iconColor}
             />
           </Pressable>
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     width: "100%",
   },
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
   backButton: {},
   iconsContainer: {
-    gap: 15,
+    gap: 10,
     display: "flex",
     flexDirection: "row",
     alignItems: "center",

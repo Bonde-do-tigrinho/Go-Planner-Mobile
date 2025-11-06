@@ -196,8 +196,9 @@ export default function HomeScreen() {
         return <ListTrips userTrips={userTrips} />; 
   };
 }
+  const bgPrimary = useThemeColor({}, 'bgPrimary');
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgPrimary }}>
       <ThemedView style={styles.container} bgName="bgPrimary">
         <Pressable
           style={styles.addButtonContainer}
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
   },
   scrollContainer: {
-    paddingVertical: 24, // Espaçamento vertical para o conteúdo não colar no topo/fundo
+    paddingVertical: 8, // Espaçamento vertical para o conteúdo não colar no topo/fundo
     paddingHorizontal: 16, // Espaçamento horizontal nas laterais da tela
   },
   avatar: {

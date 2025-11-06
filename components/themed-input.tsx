@@ -48,7 +48,7 @@ export function ThemedInput({
   const [showPassword, setShowPassword] = useState(false);
 
   const activeBorderName = isFocused ? 'primary' : 'borderPrimary';
-  const defaultBorderName = error ? 'notification' : activeBorderName;
+  const defaultBorderName = error ? 'error' : activeBorderName;
 
   const iconColor = useThemeColor({}, 'icon');
   const placeholderColor = useThemeColor({}, "textTerciary");
@@ -118,7 +118,7 @@ export function ThemedInput({
           </Pressable>
         )}
       </ThemedView>
-      {error && <ThemedText colorName="notification" style={styles.errorText}>{error}</ThemedText>}
+      {error && <ThemedText colorName="error" style={styles.errorText}>{error}</ThemedText>}
     </View>
   );
 }
@@ -126,7 +126,8 @@ export function ThemedInput({
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
-    // marginBottom removido para ser controlado pelo gap do formulário pai
+    marginBottom: 16
+   
   },
   label: {
     marginBottom: 8,

@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 const tintColorLight = '#FF5733';
 const tintColorDark = '#fff';
-const notification = "#C70039"
+const error = "#EF4444"
 //troquei as cores para poder visualizar como ficariaa ver lightmode, pois sempre começa com a dark
 export const Colors = {
   light: {
@@ -28,6 +28,7 @@ export const Colors = {
     btnDecline: '#FFD6E2',
     btnPlus: "#C70039",
     bgBtnPlus: "#fff",
+    error: "#EF4444"
   },
   dark: {
     primary: '#FF5733',
@@ -52,7 +53,7 @@ export const Colors = {
     btnDecline: '#3A1320',
     btnPlus: "#fff",
     bgBtnPlus: "#333",
-    
+    error: "#EF4444"
   },
 };
 

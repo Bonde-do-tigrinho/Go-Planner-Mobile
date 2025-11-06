@@ -4,7 +4,7 @@ import { Fonts } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { ImageBackground } from "expo-image";
 import { Link } from "expo-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Appearance, StyleSheet, Text, useWindowDimensions } from "react-native";
 
 export default function AuthScreen() {
@@ -47,7 +47,7 @@ export default function AuthScreen() {
             width="100%"
           />
         </Link>
-        <Link href={"/(tabs)"} asChild>
+        {/* <Link href={"/(tabs)"} asChild>
           <Button
             title="Ir para home"
             onPress={() => {}}
@@ -55,7 +55,7 @@ export default function AuthScreen() {
             size="xl"
             width="100%"
           />
-        </Link>
+        </Link> */}
       </ThemedView>
     </ImageBackground>
   );

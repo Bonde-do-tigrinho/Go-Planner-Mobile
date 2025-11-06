@@ -1,11 +1,12 @@
 import React from 'react';
 import {
-  StyleSheet, ScrollView, Pressable, KeyboardAvoidingView, Platform, SafeAreaView, View, Image
+  StyleSheet, ScrollView, Pressable, KeyboardAvoidingView, Platform, SafeAreaView, View, Image, Alert
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemedInput } from '@/components/themed-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -15,7 +16,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 
 const loginSchema = z.object({
   email: z.string().email('Por favor, insira um e-mail válido.'),
-  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
+  password: z.string().min(9, 'A senha deve ter pelo menos 9 caracteres.'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -25,9 +26,80 @@ export default function LoginScreen() {
     resolver: zodResolver(loginSchema),
   });
   const router = useRouter();
-  const onSubmit = (data: LoginFormData) => {
-    console.log('Enviando dados de login:', data);
-    router.push('/(tabs)')
+  
+  const onSubmit = async (data: LoginFormData) => {
+    const { email, password } = data;
+    try {
+      // Use o IP da sua máquina na rede
+      const response = await fetch(
+        `http://192.168.15.10:8082/api/users/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            senha: password,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log("Login bem-sucedido:", responseData);
+        
+        // Salvar o token no AsyncStorage
+        if (responseData.token) {
+          await AsyncStorage.setItem('userToken', responseData.token);
+          await AsyncStorage.setItem('userEmail', email);
+          console.log('Token salvo com sucesso');
+        }
+        
+        router.push("/(tabs)");
+      } else {
+        // ERRO DA API: O servidor respondeu com um erro
+        const errorData = await response.json();
+        console.error("Erro da API:", response.status, errorData);
+
+        if (response.status === 400) {
+          Alert.alert(
+            "Credenciais inválidas",
+            errorData.message || "E-mail ou senha incorretos. Por favor, tente novamente."
+          );
+        } else if (response.status === 404) {
+          Alert.alert(
+            "Usuário não encontrado",
+            errorData.message || "Este e-mail não está cadastrado. Por favor, crie uma conta."
+          );
+        } else {
+          Alert.alert(
+            "Erro no login",
+            errorData.message || "Não foi possível fazer login. Tente novamente."
+          );
+        }
+        // Retornar para não deixar o Expo mostrar o erro padrão
+        return;
+      }
+    } catch (error) {
+      console.error("Erro completo:", error);
+
+      // Verificar qual tipo de erro ocorreu
+      if (error instanceof TypeError) {
+        Alert.alert(
+          "Erro de Conexão",
+          "Verifique se:\n1. A API está rodando\n2. O IP está correto\n3. Você está na mesma rede\n\nErro: " +
+            error.message
+        );
+      } else {
+        Alert.alert(
+          "Erro",
+          "Não foi possível se conectar ao servidor. Verifique sua internet."
+        );
+      }
+      // Retornar para não deixar o Expo mostrar o erro padrão
+      return;
+    }
   };
 
   const iconColor = useThemeColor({}, 'primary');
@@ -77,6 +149,7 @@ export default function LoginScreen() {
                 onChangeText={onChange}
                 value={value}
                 error={errors.password?.message}
+                isPassword
               />
             )}
           />  
