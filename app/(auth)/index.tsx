@@ -47,7 +47,7 @@ export default function AuthScreen() {
             width="100%"
           />
         </Link>
-        {/* <Link href={"/(tabs)"} asChild>
+        <Link href={"/(tabs)"} asChild>
           <Button
             title="Ir para home"
             onPress={() => {}}
@@ -55,7 +55,7 @@ export default function AuthScreen() {
             size="xl"
             width="100%"
           />
-        </Link> */}
+        </Link>
       </ThemedView>
     </ImageBackground>
   );

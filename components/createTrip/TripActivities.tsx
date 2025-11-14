@@ -12,8 +12,11 @@ import ListTrips from '../home/listTrips';
 import SheetModal from '../modal';
 
 interface tripActivitiesProps {
+  // O 'control' e 'errors' para os campos DESTA aba
   control: Control<CreateTripFormData>;
   errors: FieldErrors<CreateTripFormData>;
+  
+  // Os dados da aba anterior que queremos exibir
   destination: string;
   startDate?: Date;
   endDate?: Date;
@@ -68,146 +71,140 @@ export default function TripActivities({control, errors, destination, endDate, s
 ]
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.container}>
-        <ScrollView 
-        showsVerticalScrollIndicator={false}
-        style={styles.scrollContainer}>
-          <CardInfo
-            destination={destination}
-            startDate={startDate}
-            endDate={endDate}
-          />
-          <View style={{marginTop: 20}} >
-            <ThemedText colorName='textPrimary' type='default' isSemiBold > Dia 20</ThemedText>
-            <View style={styles.listCardActivities}>
-                {
-                  activitiesList.map(activity => (
-                    <ThemedView key={activity.id} style={styles.containerCard}  borderWidth={1} borderName='borderPrimary'>
-                      <View style={{display: "flex", flexDirection: "row", gap:8, alignItems: "center"}}>
-                        {
-                          activity.concluida === true ?
-                          <ThemedView bgName='primary' style={[styles.check, {padding: 2} ]}>
-                            <Ionicons
-                              name="checkmark"
-                              size={18}
-                              color="white"
-                            />
-                          </ThemedView>
-                          :
-                           <ThemedView borderName='primary' borderWidth={0.5} style={[styles.notCheck, {padding: 2}]}>
-                            
-                          </ThemedView >
-                        }
-                        <ThemedText type='sm' colorName='textSecondary'>
-                          {activity.desc}
-                        </ThemedText>
-                      </View>
-
-                      <View style={{display: "flex", flexDirection: "row", gap:10, alignItems: "center"}}>
-                        <ThemedText type='px' colorName='textSecondary'>
-                          {activity.horario}
-                        </ThemedText>
-                        <ThemedView  bgName='bgTerciary' style={{height: 22, width: 2, borderRadius: 4}}/>
-                        <Ionicons
-                            name="trash"
-                            size={20}
-                            color={iconColor}
-                          />
-                      </View>
-                    </ThemedView>
-                    ))
-              } 
-            </View>
-          </View>
-
-          <View style={{marginTop: 20}} >
-            <ThemedText colorName='textPrimary' type='default' isSemiBold > Dia 21</ThemedText>
-            <View style={styles.listCardActivities}>
-                {
-                  activitiesList.map(activity => (
-                    <ThemedView key={activity.id} style={styles.containerCard}  borderWidth={1} borderName='borderPrimary'>
-                      <View style={{display: "flex", flexDirection: "row", gap:8, alignItems: "center"}}>
-                        {
-                          activity.concluida === true ?
-                          <ThemedView bgName='primary' style={[styles.check, {padding: 2} ]}>
-                            <Ionicons
-                              name="checkmark"
-                              size={18}
-                              color="white"
-                            />
-                          </ThemedView>
-                          :
-                           <ThemedView borderName='primary' borderWidth={0.5} style={[styles.notCheck, {padding: 2}]}>
-                            
-                          </ThemedView >
-                        }
-                        <ThemedText type='sm' colorName='textSecondary'>
-                          {activity.desc}
-                        </ThemedText>
-                      </View>
-
-                      <View style={{display: "flex", flexDirection: "row", gap:10, alignItems: "center"}}>
-                        <ThemedText type='px' colorName='textSecondary'>
-                          {activity.horario}
-                        </ThemedText>
-                        <ThemedView  bgName='bgTerciary' style={{height: 22, width: 2, borderRadius: 4}}/>
-                        <Ionicons
-                            name="trash"
-                            size={20}
-                            color={iconColor}
-                          />
-                      </View>
-                    </ThemedView>
-                    ))
-              } 
-            </View>
-          </View>
-        </ScrollView>
-      </View>
-
-      {/* Botão flutuante fixo
+    <View style={styles.container}>
       <Pressable
-        style={styles.fabContainer}
+        style={styles.addButtonContainer}
         onPress={() => toggleModalVisible()}
       >
-        <View style={[styles.fab, { backgroundColor: bgBtnPlus }]}>
+        <View style={[styles.addButton, { backgroundColor: bgBtnPlus }]}>
           <ThemedText type="sm" isSemiBold={true} colorName="secondary" darkColor="#fff">
-            Nova viagem
+            {" "}
+            Nova viagem{" "}
           </ThemedText>
           <Ionicons name="add" size={40} color={btnPlus} />
         </View>
       </Pressable>
+      <ScrollView style={styles.scrollContainer}>
+        <CardInfo
+          destination={destination}
+          startDate={startDate}
+          endDate={endDate}
+        />
+        <View style={{marginTop: 20}} >
+          <ThemedText colorName='textPrimary' type='default' isSemiBold > Dia 20</ThemedText>
+          <View style={styles.listCardActivities}>
+              {
+                activitiesList.map(activity => (
+                  <ThemedView key={activity.id} style={styles.containerCard}  borderWidth={1} borderName='borderPrimary'>
+                    <View style={{display: "flex", flexDirection: "row", gap:8, alignItems: "center"}}>
+                      {
+                        activity.concluida === true ?
+                        <ThemedView bgName='primary' style={[styles.check, {padding: 2} ]}>
+                          <Ionicons
+                            name="checkmark"
+                            size={18}
+                            color="white"
+                          />
+                        </ThemedView>
+                        :
+                         <ThemedView borderName='primary' borderWidth={0.5} style={[styles.notCheck, {padding: 2}]}>
+                          
+                        </ThemedView >
+                      }
+                      <ThemedText type='sm' colorName='textSecondary'>
+                        {activity.desc}
+                      </ThemedText>
+                    </View>
 
+                    <View style={{display: "flex", flexDirection: "row", gap:10, alignItems: "center"}}>
+                      <ThemedText type='px' colorName='textSecondary'>
+                        {activity.horario}
+                      </ThemedText>
+                      <ThemedView  bgName='bgTerciary' style={{height: 22, width: 2, borderRadius: 4}}/>
+                      <Ionicons
+                          name="trash"
+                          size={20}
+                          color={iconColor}
+                        />
+                    </View>
+                  </ThemedView>
+                  ))
+            } 
+          </View>
+        </View>
+
+        <View style={{marginTop: 20}} >
+          <ThemedText colorName='textPrimary' type='default' isSemiBold > Dia 21</ThemedText>
+          <View style={styles.listCardActivities}>
+              {
+                activitiesList.map(activity => (
+                  <ThemedView key={activity.id} style={styles.containerCard}  borderWidth={1} borderName='borderPrimary'>
+                    <View style={{display: "flex", flexDirection: "row", gap:8, alignItems: "center"}}>
+                      {
+                        activity.concluida === true ?
+                        <ThemedView bgName='primary' style={[styles.check, {padding: 2} ]}>
+                          <Ionicons
+                            name="checkmark"
+                            size={18}
+                            color="white"
+                          />
+                        </ThemedView>
+                        :
+                         <ThemedView borderName='primary' borderWidth={0.5} style={[styles.notCheck, {padding: 2}]}>
+                          
+                        </ThemedView >
+                      }
+                      <ThemedText type='sm' colorName='textSecondary'>
+                        {activity.desc}
+                      </ThemedText>
+                    </View>
+
+                    <View style={{display: "flex", flexDirection: "row", gap:10, alignItems: "center"}}>
+                      <ThemedText type='px' colorName='textSecondary'>
+                        {activity.horario}
+                      </ThemedText>
+                      <ThemedView  bgName='bgTerciary' style={{height: 22, width: 2, borderRadius: 4}}/>
+                      <Ionicons
+                          name="trash"
+                          size={20}
+                          color={iconColor}
+                        />
+                    </View>
+                  </ThemedView>
+                  ))
+            } 
+          </View>
+        </View>
+      </ScrollView>
       <SheetModal
         visible={isModalVisible}
         onClose={toggleModalVisible}
-        title="Criar nova"
+        title="Criar nova atividade"
       >
         <Text>Modal de atividades</Text>
-      </SheetModal> */}
+      </SheetModal>
     </View>
   )
 }
-
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    position: "relative"
-  },
   container: {
     flex: 1,
     display: "flex",
     flexDirection: "column",
     alignItems:"center"
   },
-  fabContainer: {
+   scrollContainer:{
+    paddingVertical: 8,
+    paddingHorizontal:1,
+    width:"100%"
+  },
+  addButtonContainer: {
     position: "absolute",
-    bottom: 100,
-    right: 16,
+    bottom: 130,
+    right: 0,
     zIndex: 999,
   },
-  fab: {
+  addButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     display: "flex",
@@ -219,14 +216,9 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
-    elevation: 5,
+    elevation: 3,
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
-  },
-  scrollContainer:{
-    paddingVertical: 8,
-    paddingHorizontal:1,
-    width:"100%"
   },
   check:{
     width: 20,

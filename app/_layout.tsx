@@ -9,6 +9,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ThemedText } from '@/components/themed-text';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { PaperProvider } from 'react-native-paper';
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
@@ -16,28 +17,30 @@ function RootLayoutNav() {
 
   return (
     <SafeAreaProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)/index" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
-            <Stack.Screen 
-              name="createTrip" 
-              options={{ 
-                headerTitle: () => (
-                  <ThemedText type='subtitle' colorName='textPrimary' isSemiBold={true} style={{left: -20}}>
-                    Criação da viagem
-                    <Ionicons name="ellipse" size={9} color="#FF5733" />
-                  </ThemedText>
-                ), 
-                headerShown: true 
-              }} 
-            />
-            <Stack.Screen name="notifications" options={{ headerShown: false }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </>
-      </ThemeProvider>
+      <PaperProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)/index" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
+              <Stack.Screen 
+                name="createTrip" 
+                options={{ 
+                  headerTitle: () => (
+                    <ThemedText type='subtitle' colorName='textPrimary' isSemiBold={true} style={{left: -20}}>
+                      Criação da viagem
+                      <Ionicons name="ellipse" size={9} color="#FF5733" />
+                    </ThemedText>
+                  ), 
+                  headerShown: true 
+                }} 
+              />
+              <Stack.Screen name="notifications" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </>
+        </ThemeProvider>
+      </PaperProvider>
     </SafeAreaProvider>
   );
 }

@@ -23,6 +23,7 @@ import {
 } from "react-native";
 import { z } from "zod";
 import React from "react";
+import TripGuestsForm from "@/components/createTrip/TripGuestsForm";
 
 
 const guestSchema = z.object({
@@ -82,7 +83,8 @@ export default function CreateTrip() {
   const tabs = ["Dados", "Atividades", "Convidar"];
 
   const [activeTab, setActiveTab] = useState(tabs[0]);
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [isActivityModalVisible, setActivityModalVisible] = useState(false);
+  const [isGuestModalVisible, setGuestModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
@@ -92,8 +94,11 @@ export default function CreateTrip() {
   const borderColor = useThemeColor({}, "borderPrimary");
   const primaryColor = useThemeColor({}, "primary");
 
-  const toggleModalVisible = () => {
-    setModalVisible(!isModalVisible);
+  const toggleActivityModalVisible = () => {
+    setActivityModalVisible(!isActivityModalVisible);
+  };
+  const toggleGuestModalVisible = () => {
+    setGuestModalVisible(!isGuestModalVisible);
   };
 
   const {
@@ -136,9 +141,13 @@ export default function CreateTrip() {
         );
       case "Convidar":
         return (
-          <View>
-            <Text>Conteúdo da Aba Convidar</Text>
-          </View>
+          <TripGuestsForm 
+            control={control}
+            errors={errors}
+            destination={destination}
+            startDate={startDate}
+            endDate={endDate}  
+          />
         );
     }
   };
@@ -167,28 +176,50 @@ export default function CreateTrip() {
       </ScrollView>
 
       {/* FAB FIXO - FORA DO SCROLLVIEW */}
-      {activeTab === "Atividades" && (
-        <Pressable
-          style={styles.fabContainer}
-          onPress={() => toggleModalVisible()}
-        >
-          <View style={[styles.fab, { backgroundColor: bgBtnPlus }]}>
-            <ThemedText
-              type="sm"
-              isSemiBold={true}
-              colorName="secondary"
-              darkColor="#fff"
-            >
-              Nova viagem
-            </ThemedText>
-            <Ionicons name="add" size={40} color={btnPlus} />
-          </View>
-        </Pressable>
-      )}
+      {
+        activeTab === "Atividades" && (
+          <Pressable
+            style={styles.fabContainer}
+            onPress={() => toggleActivityModalVisible()}
+          >
+            <View style={[styles.fab, { backgroundColor: bgBtnPlus }]}>
+              <ThemedText
+                type="sm"
+                isSemiBold={true}
+                colorName="secondary"
+                darkColor="#fff"
+              >
+                Nova viagem
+              </ThemedText>
+              <Ionicons name="add" size={40} color={btnPlus} />
+            </View>
+          </Pressable>
+        )
+      }
+      {
+        activeTab === "Convidar" && (
+          <Pressable
+            style={styles.fabContainer}
+            onPress={() => toggleActivityModalVisible()}
+          >
+            <View style={[styles.fab, { backgroundColor: bgBtnPlus }]}>
+              <ThemedText
+                type="sm"
+                isSemiBold={true}
+                colorName="secondary"
+                darkColor="#fff"
+              >
+                Adicionar convidado
+              </ThemedText>
+              <Ionicons name="add" size={40} color={btnPlus} />
+            </View>
+          </Pressable>
+        )
+      }
 
       <SheetModal
-        visible={isModalVisible}
-        onClose={toggleModalVisible}
+        visible={isActivityModalVisible}
+        onClose={toggleActivityModalVisible}
         title="Nova Atividade"
       >
         <View style={styles.modalContent}>
@@ -331,7 +362,158 @@ export default function CreateTrip() {
             width="100%"
           />
         </View>
+
       </SheetModal>
+
+      <SheetModal
+        visible={isGuestModalVisible}
+        onClose={toggleGuestModalVisible}
+        title="Adicionar Convidado"
+      >
+        <View style={styles.modalContent}>
+          <ThemedText colorName="textTerciary" type="sm">
+            Convide a pessoa que irá planejar e viajar junto com você!
+          </ThemedText>
+
+          {/* 1. Descrição da atividade */}
+          <Controller
+            control={control}
+            name="activities.0.title"
+            rules={{ required: "A descrição da atividade é obrigatória" }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <ThemedInput
+                label="Descrição"
+                placeholder="Ex: Visitar o Templo Sensoji"
+                icon="create-outline"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+                error={errors.activities?.[0]?.title?.message}
+                returnKeyType="next"
+              />
+            )}
+          />
+
+          {/* 2. Data*/}
+          <View style={styles.dateField}>
+            <ThemedText colorName="textPrimary" type="default">
+              Escolha o dia:
+            </ThemedText>
+            <Controller
+              control={control}
+              name="activities.0.date"
+              rules={{ required: "A data é obrigatória" }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <TouchableOpacity
+                    style={[styles.dateInput, { borderColor: borderColor }]}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Ionicons
+                      name="calendar-outline"
+                      size={24}
+                      color={iconColor}
+                    />
+                    <ThemedText colorName="textTerciary" type="default">
+                      {value
+                        ? value.toLocaleDateString("pt-BR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })
+                        : "Selecione..."}
+                    </ThemedText>
+                  </TouchableOpacity>
+
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={value || new Date()}
+                      mode="date"
+                      display={Platform.OS === "ios" ? "spinner" : "default"}
+                      onChange={(event, selectedDate) => {
+                        setShowDatePicker(false);
+                        if (selectedDate) {
+                          onChange(selectedDate);
+                        }
+                      }}
+                      textColor={primaryColor}
+                      accentColor={primaryColor}
+                    />
+                  )}
+                </>
+              )}
+            />
+            {errors.activities?.[0]?.date && (
+              <Text style={styles.errorText}>
+                {errors.activities[0].date?.message}
+              </Text>
+            )}
+          </View>
+
+          {/* 3. Horário*/}
+          <View style={styles.dateField}>
+            <ThemedText colorName="textPrimary" type="default">
+              Escolha o horário:
+            </ThemedText>
+            <Controller
+              control={control}
+              name="activities.0.time"
+              rules={{ required: "O horário é obrigatório" }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <TouchableOpacity
+                    style={[styles.dateInput, { borderColor: borderColor }]}
+                    onPress={() => setShowTimePicker(true)}
+                  >
+                    <Ionicons name="time-outline" size={24} color={iconColor} />
+                    <ThemedText colorName="textTerciary" type="default">
+                      {value
+                        ? value.toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "Selecione..."}
+                    </ThemedText>
+                  </TouchableOpacity>
+
+                  {showTimePicker && (
+                    <DateTimePicker
+                      value={value || new Date()}
+                      mode="time"
+                      display={Platform.OS === "ios" ? "spinner" : "default"}
+                      onChange={(event, selectedTime) => {
+                        setShowTimePicker(false);
+                        if (selectedTime) {
+                          onChange(selectedTime);
+                        }
+                      }}
+                      textColor={primaryColor}
+                      accentColor={primaryColor}
+                    />
+                  )}
+                </>
+              )}
+            />
+            {errors.activities?.[0]?.time && (
+              <Text style={styles.errorText}>
+                {errors.activities[0].time?.message}
+              </Text>
+            )}
+          </View>
+          
+          <View style={{marginTop: 10}} />
+          <Button
+            title="Criar ativiade"
+            onPress={() => {}}
+            variant="gradient-primary"
+            size="xl"
+            width="100%"
+          />
+        </View>
+
+      </SheetModal>
+
+
     </ThemedView>
   );
 }

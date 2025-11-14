@@ -10,7 +10,7 @@ interface cardInfoProps {
   startDate?: Date;
   endDate?: Date;
 }
-export default function cardInfo({destination, endDate, startDate} : cardInfoProps) {
+export default function CardInfo({destination, endDate, startDate} : cardInfoProps) {
   
   const iconColor = useThemeColor({}, "secondary");
   function formatDateRange(start?: Date, end?: Date) {
