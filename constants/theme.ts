@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 const tintColorLight = '#FF5733';
 const tintColorDark = '#fff';
-const notification = "#C70039"
+const error = "#EF4444"
 //troquei as cores para poder visualizar como ficariaa ver lightmode, pois sempre começa com a dark
 export const Colors = {
   light: {
@@ -13,8 +13,8 @@ export const Colors = {
     textSecondary: '#71717A',  
     textTerciary: '#A1A1AA',  
     bgPrimary: '#fff',
-    bgSecondary: '#000 ',
-    bgTerciary: '#fff',
+    bgSecondary: '#eee ',
+    bgTerciary: '#ddd',
     borderPrimary: "#ddd",
     tabActive: "#FFE3DD",
     tabTextActive: "#FF5733",
@@ -27,7 +27,8 @@ export const Colors = {
     btnAccept: '#FFE2DC',
     btnDecline: '#FFD6E2',
     btnPlus: "#C70039",
-    bgBtnPlus: "#fff"
+    bgBtnPlus: "#fff",
+    error: "#EF4444"
   },
   dark: {
     primary: '#FF5733',
@@ -38,6 +39,7 @@ export const Colors = {
     textTerciary:  '#71717A', 
     bgPrimary: '#151718',
     bgSecondary: '#333',
+    bgTerciary: '#222',
     borderPrimary: "#333",
     tabActive: "#FF5733",
     tabTextActive: "#FFE3DD",
@@ -50,29 +52,25 @@ export const Colors = {
     btnAccept: '#3D221D',
     btnDecline: '#3A1320',
     btnPlus: "#fff",
-    bgBtnPlus: "#333"
+    bgBtnPlus: "#333",
+    error: "#EF4444"
   },
 };
 
 export const Fonts = Platform.select({
-  ios: {
-    sans: 'Inter',
+   ios: {
+    sans: 'Inter-Regular',
     sansSemiBold: 'Inter-SemiBold',
     sansBold: 'Inter-Bold',
-    serif: 'ui-serif',
-    mono: 'ui-monospace',
+  },
+  android: {
+    sans: 'Inter-Regular',
+    sansSemiBold: 'Inter-SemiBold',
+    sansBold: 'Inter-Bold',
   },
   default: {
-    sans: 'Inter',
+    sans: 'Inter-Regular',
     sansSemiBold: 'Inter-SemiBold',
     sansBold: 'Inter-Bold',
-    serif: 'ui-serif',
-    mono: 'ui-monospace',
-  },
-  web: {
-    sans: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });

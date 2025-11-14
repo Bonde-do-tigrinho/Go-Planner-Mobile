@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import { StyleSheet, View } from "react-native";
 import { ThemedText } from "./themed-text";
 import { ThemedView } from "./themed-view";
-
+import React from "react";
 type Guest = {
   id: number;
   name: string;

@@ -42,6 +42,12 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permitir que o app acesse suas fotos."
+        }
       ]
     ],
     "experiments": {

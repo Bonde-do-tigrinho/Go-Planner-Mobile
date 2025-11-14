@@ -1,8 +1,9 @@
 // components/ui/themed-view.tsx
 import { View, type ViewProps } from 'react-native';
-
+import React from "react"
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { Colors } from '@/constants/theme';
+
 
 export type ThemedViewProps = ViewProps & {
   // Overrides específicos
@@ -17,6 +18,7 @@ export type ThemedViewProps = ViewProps & {
   
   // Prop para a largura da borda
   borderWidth?: number;
+  children?: React.ReactNode
 };
 
 export function ThemedView({
@@ -28,6 +30,7 @@ export function ThemedView({
   bgName = 'bgPrimary', // Valor padrão: 'background'
   borderName = "bgPrimary",
   borderWidth,
+  children,
   ...otherProps
 }: ThemedViewProps) {
   // Lógica separada para cada cor
@@ -38,6 +41,8 @@ export function ThemedView({
     <View 
       style={[{ backgroundColor, borderColor, borderWidth }, style]} 
       {...otherProps} 
-    />
+    >
+      {children}
+    </View>
   );
 }

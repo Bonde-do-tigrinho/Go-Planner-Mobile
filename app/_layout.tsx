@@ -1,34 +1,46 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
+import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { Stack, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ThemedText } from '@/components/themed-text';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-
-// Impede que a tela de splash se esconda automaticamente antes de estarmos prontos
+import { PaperProvider } from 'react-native-paper';
 SplashScreen.preventAutoHideAsync();
 
-/**
- * Componente que renderiza a navegação principal.
- * Ele só é chamado depois que as fontes foram carregadas.
- */
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
     <SafeAreaProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true, }} />
-          {/* Adicionei essa linha pois ela corrige o bug de rota */}
-          <Stack.Screen name="notifications" options={{ headerShown: false }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <PaperProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)/index" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal', headerShown: true }} />
+              <Stack.Screen 
+                name="createTrip" 
+                options={{ 
+                  headerTitle: () => (
+                    <ThemedText type='subtitle' colorName='textPrimary' isSemiBold={true} style={{left: -20}}>
+                      Criação da viagem
+                      <Ionicons name="ellipse" size={9} color="#FF5733" />
+                    </ThemedText>
+                  ), 
+                  headerShown: true 
+                }} 
+              />
+              <Stack.Screen name="notifications" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </>
+        </ThemeProvider>
+      </PaperProvider>
     </SafeAreaProvider>
   );
 }
@@ -38,14 +50,17 @@ function RootLayoutNav() {
  */
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    'Inter': require('../assets/fonts/Inter_18pt-Regular.ttf'),
-    'Inter-SemiBold': require('../assets/fonts/Inter_18pt-SemiBold.ttf'),
-    'Inter-Bold': require('../assets/fonts/Inter_18pt-Bold.ttf'),
+    'Inter-Regular': Inter_400Regular,
+    'Inter-SemiBold': Inter_600SemiBold,
+    'Inter-Bold': Inter_700Bold,
   });
 
   // Expo Router usa useEffect para capturar erros durante o carregamento
   useEffect(() => {
-    if (error) throw error;
+    if (error) {
+      console.error('Erro detalhado:', error);
+      throw error;
+    }
   }, [error]);
 
   useEffect(() => {
@@ -59,6 +74,5 @@ export default function RootLayout() {
     return null;
   }
 
-  // Quando as fontes estiverem carregadas, renderiza o componente de navegação.
   return <RootLayoutNav />;
 }

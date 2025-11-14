@@ -193,16 +193,16 @@ export default function HomeScreen() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "Todas":
-        return <ListTrips userTrips={userTrips} />; // Continua funcionando perfeitamente
-      // ... outros casos
-    }
+        return <ListTrips userTrips={userTrips} />; 
   };
+}
+  const bgPrimary = useThemeColor({}, 'bgPrimary');
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgPrimary }}>
       <ThemedView style={styles.container} bgName="bgPrimary">
         <Pressable
           style={styles.addButtonContainer}
-          onPress={() => router.push("/modal")}
+          onPress={() => router.push("/createTrip")}
         >
           <View style={[styles.addButton, { backgroundColor: bgBtnPlus }]}>
             <ThemedText type="sm" isSemiBold={true} colorName="secondary" darkColor="#fff">
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
   },
   scrollContainer: {
-    paddingVertical: 24, // Espaçamento vertical para o conteúdo não colar no topo/fundo
+    paddingVertical: 8, // Espaçamento vertical para o conteúdo não colar no topo/fundo
     paddingHorizontal: 16, // Espaçamento horizontal nas laterais da tela
   },
   avatar: {

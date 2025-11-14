@@ -1,4 +1,3 @@
-// app/(auth)/verify-code.tsx
 import { SafeAreaView, Text, StyleSheet, View, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -27,15 +26,21 @@ export default function VerifyCodeScreen() {
   const router = useRouter();
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    const codigoFixo = 123456
     try {
-      // Aqui você faria a chamada para a sua API
-      // const response = await api.post('/verify-code', { email, code: value });
-      console.log(`Enviando código ${value} para o backend para o email ${email}`);
-       if (Number(value) === codigoFixo) {
-        console.log('Código correto! Navegando para a home...');
-        router.replace('/(tabs)');
-      } else {
+      const response = await fetch(`http://192.168.15.10:8082/api/users/confirm-account`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                codigo: value
+            }),
+        });
+
+        if (response.ok) {
+           router.push('/(auth)/login');
+        } else {
         console.log('Código incorreto!');
         Alert.alert('Erro', 'O código de verificação está incorreto. Tente novamente.');
       }

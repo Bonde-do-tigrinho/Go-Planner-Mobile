@@ -4,7 +4,7 @@ import { Fonts } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { ImageBackground } from "expo-image";
 import { Link } from "expo-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Appearance, StyleSheet, Text, useWindowDimensions } from "react-native";
 
 export default function AuthScreen() {

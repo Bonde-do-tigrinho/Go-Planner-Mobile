@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 export default function ProfileScreen() {
   const tabs = ["Dados pessoais", "Histórico de viagem", "Configurações"];
@@ -34,9 +35,9 @@ export default function ProfileScreen() {
         );
     }
   };
-
+ const bgPrimary = useThemeColor({}, 'bgPrimary');
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgPrimary, paddingVertical: 8,}}>
       <ThemedView style={styles.container} bgName="bgPrimary">
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Header onNotificationPress={handleNavigateToNotifications}>

@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.tabInactive,
-    marginRight: 10, 
+    marginRight: 12, // Espaçamento entre os botões
   },
   activeTab: {
     borderWidth: 0
