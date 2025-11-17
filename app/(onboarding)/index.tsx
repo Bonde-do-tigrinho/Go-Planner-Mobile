@@ -1,8 +1,7 @@
 // app/(onboarding)/index.tsx
 import React, { useRef, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, useWindowDimensions, Pressable } from 'react-native';
-import { router } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@/hooks/useAuth';
 import { Image, ImageBackground } from 'expo-image'; // Usar ImageBackground da expo-image para melhor performance
 import { BlurView } from 'expo-blur';
 // Dados para as telas de onboarding
@@ -37,14 +36,16 @@ export default function OnboardingScreen() {
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
+  const { completeOnboarding } = useAuth();
 
   // Função chamada ao finalizar o onboarding
   const handleComplete = async () => {
     try {
-      await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
-      router.replace("/(auth)"); // Navega para a tela de login/cadastro
+      await completeOnboarding();
+      console.log('Onboarding completado!');
+      // O redirecionamento é feito automaticamente pelo useAuth
     } catch (e) {
-      console.error('Erro ao salvar no AsyncStorage', e);
+      console.error('Erro ao completar onboarding', e);
     }
   };
 

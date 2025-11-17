@@ -5,8 +5,8 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Link } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
 import { ThemedInput } from '@/components/themed-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -25,7 +25,7 @@ export default function LoginScreen() {
   const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
-  const router = useRouter();
+  const { signIn } = useAuth();
   
   const onSubmit = async (data: LoginFormData) => {
     const { email, password } = data;
@@ -49,14 +49,13 @@ export default function LoginScreen() {
         const responseData = await response.json();
         console.log("Login bem-sucedido:", responseData);
         
-        // Salvar o token no AsyncStorage
+        // Usar o hook useAuth para salvar o token
         if (responseData.token) {
-          await AsyncStorage.setItem('userToken', responseData.token);
-          await AsyncStorage.setItem('userEmail', email);
+          await signIn(responseData.token, email);
           console.log('Token salvo com sucesso');
         }
         
-        router.push("/(tabs)");
+        // O redirecionamento é feito automaticamente pelo useAuth
       } else {
         // ERRO DA API: O servidor respondeu com um erro
         const errorData = await response.json();
