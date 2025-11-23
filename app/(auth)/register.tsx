@@ -3,6 +3,7 @@ import { ThemedInput } from "@/components/themed-input";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { API_URL } from "@/constants/api";
 import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
@@ -55,21 +56,19 @@ export default function RegisterScreen() {
   const onSubmit = async (data: RegisterFormData) => {
     const { name, email, password } = data;
     try {
-      // Use o IP da sua máquina na rede, não localhost
-      const response = await fetch(
-        `http://192.168.15.10:8082/api/users/cadastrar`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nome: name,
-            email: email,
-            senha: password,
-          }),
-        }
-      );
+      console.log('API URL:', API_URL);
+      
+      const response = await fetch(`${API_URL}/users/cadastrar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome: name,
+          email: email,
+          senha: password,
+        }),
+      });
 
       if (response.ok) {
         const responseData = await response.json();

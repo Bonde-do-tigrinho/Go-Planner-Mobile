@@ -1,12 +1,11 @@
-import { ThemedView } from "@/components/themed-view";
 import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
 import { BtnThemeToggleButton } from "@/components/ui/btnToggleTheme";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
-import React, { useState, useEffect } from "react";
-import { Button, StyleSheet, View, ScrollView, Alert } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/hooks/useAuth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
+import { Alert, Button, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Teste() {
   const insets = useSafeAreaInsets();
@@ -25,18 +24,18 @@ export default function Teste() {
   const loadStorageData = async () => {
     try {
       const [onboarding, token, email] = await Promise.all([
-        AsyncStorage.getItem('hasCompletedOnboarding'),
-        AsyncStorage.getItem('userToken'),
-        AsyncStorage.getItem('userEmail'),
+        AsyncStorage.getItem("hasCompletedOnboarding"),
+        AsyncStorage.getItem("userToken"),
+        AsyncStorage.getItem("userEmail"),
       ]);
-      
+
       setStorageData({
         hasCompletedOnboarding: onboarding,
         userToken: token,
         userEmail: email,
       });
     } catch (error) {
-      console.error('Erro ao carregar AsyncStorage:', error);
+      console.error("Erro ao carregar AsyncStorage:", error);
     }
   };
 
@@ -48,36 +47,40 @@ export default function Teste() {
   const handleResetOnboarding = async () => {
     try {
       await AsyncStorage.removeItem("hasCompletedOnboarding");
-      Alert.alert('Sucesso', 'Onboarding resetado!');
+      Alert.alert("Sucesso", "Onboarding resetado!");
       await loadStorageData(); // Recarrega os dados
       await refreshAuthState(); // Força o useAuth a verificar novamente
     } catch (e) {
       console.error("Falha ao limpar o AsyncStorage", e);
-      Alert.alert('Erro', 'Falha ao resetar onboarding');
+      Alert.alert("Erro", "Falha ao resetar onboarding");
     }
   };
 
   const handleClearAll = async () => {
     try {
-      await AsyncStorage.multiRemove(['hasCompletedOnboarding', 'userToken', 'userEmail']);
-      Alert.alert('Sucesso', 'Todos os dados foram limpos!');
+      await AsyncStorage.multiRemove([
+        "hasCompletedOnboarding",
+        "userToken",
+        "userEmail",
+      ]);
+      Alert.alert("Sucesso", "Todos os dados foram limpos!");
       await loadStorageData(); // Recarrega os dados
       await refreshAuthState(); // Força o useAuth a verificar novamente
     } catch (e) {
       console.error("Falha ao limpar o AsyncStorage", e);
-      Alert.alert('Erro', 'Falha ao limpar dados');
+      Alert.alert("Erro", "Falha ao limpar dados");
     }
   };
 
   const handleClearToken = async () => {
     try {
-      await AsyncStorage.multiRemove(['userToken', 'userEmail']);
-      Alert.alert('Sucesso', 'Token removido!');
+      await AsyncStorage.multiRemove(["userToken", "userEmail"]);
+      Alert.alert("Sucesso", "Token removido!");
       await loadStorageData(); // Recarrega os dados
       await refreshAuthState(); // Força o useAuth a verificar novamente
     } catch (e) {
       console.error("Falha ao limpar token", e);
-      Alert.alert('Erro', 'Falha ao limpar token');
+      Alert.alert("Erro", "Falha ao limpar token");
     }
   };
 
@@ -89,22 +92,40 @@ export default function Teste() {
       ]}
       bgName="bgPrimary"
     >
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         <ThemedText type="title" colorName="textPrimary" style={styles.title}>
           Debug AsyncStorage
         </ThemedText>
 
-        <ThemedView style={styles.dataContainer} bgName="bgSecondary" borderName="borderPrimary" borderWidth={1}>
-          <ThemedText type="subtitle" colorName="textPrimary" style={styles.sectionTitle}>
+        <ThemedView
+          style={styles.dataContainer}
+          bgName="bgSecondary"
+          borderName="borderPrimary"
+          borderWidth={1}
+        >
+          <ThemedText
+            type="subtitle"
+            colorName="textPrimary"
+            style={styles.sectionTitle}
+          >
             📦 Dados Armazenados:
           </ThemedText>
-          
+
           <View style={styles.dataRow}>
             <ThemedText colorName="textSecondary" isSemiBold>
               hasCompletedOnboarding:
             </ThemedText>
-            <ThemedText colorName={storageData.hasCompletedOnboarding === 'true' ? 'primary' : 'error'}>
-              {storageData.hasCompletedOnboarding || 'null'}
+            <ThemedText
+              colorName={
+                storageData.hasCompletedOnboarding === "true"
+                  ? "primary"
+                  : "error"
+              }
+            >
+              {storageData.hasCompletedOnboarding || "null"}
             </ThemedText>
           </View>
 
@@ -112,8 +133,13 @@ export default function Teste() {
             <ThemedText colorName="textSecondary" isSemiBold>
               userToken:
             </ThemedText>
-            <ThemedText colorName={storageData.userToken ? 'primary' : 'error'} numberOfLines={1}>
-              {storageData.userToken ? `${storageData.userToken.substring(0, 20)}...` : 'null'}
+            <ThemedText
+              colorName={storageData.userToken ? "primary" : "error"}
+              numberOfLines={1}
+            >
+              {storageData.userToken
+                ? `${storageData.userToken.substring(0, 20)}...`
+                : "null"}
             </ThemedText>
           </View>
 
@@ -121,8 +147,8 @@ export default function Teste() {
             <ThemedText colorName="textSecondary" isSemiBold>
               userEmail:
             </ThemedText>
-            <ThemedText colorName={storageData.userEmail ? 'primary' : 'error'}>
-              {storageData.userEmail || 'null'}
+            <ThemedText colorName={storageData.userEmail ? "primary" : "error"}>
+              {storageData.userEmail || "null"}
             </ThemedText>
           </View>
 
@@ -136,7 +162,7 @@ export default function Teste() {
         </ThemedView>
 
         <BtnThemeToggleButton />
-        
+
         <View style={styles.buttonContainer}>
           <View style={styles.debugButton}>
             <Button
@@ -180,7 +206,7 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   dataContainer: {
     padding: 20,
@@ -191,14 +217,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dataRow: {
-    flexDirection: 'column',
+    flexDirection: "column",
     gap: 4,
     paddingVertical: 8,
   },
   refreshButton: {
     marginTop: 12,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   buttonContainer: {
     gap: 12,
@@ -206,6 +232,6 @@ const styles = StyleSheet.create({
   },
   debugButton: {
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 });

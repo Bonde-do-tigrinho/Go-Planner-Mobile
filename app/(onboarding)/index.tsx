@@ -1,34 +1,41 @@
 // app/(onboarding)/index.tsx
-import React, { useRef, useState } from 'react';
-import { View, ScrollView, Text, StyleSheet, useWindowDimensions, Pressable } from 'react-native';
-import { useAuth } from '@/hooks/useAuth';
-import { Image, ImageBackground } from 'expo-image'; // Usar ImageBackground da expo-image para melhor performance
-import { BlurView } from 'expo-blur';
+import { useAuth } from "@/hooks/useAuth";
+import { BlurView } from "expo-blur";
+import { Image, ImageBackground } from "expo-image"; // Usar ImageBackground da expo-image para melhor performance
+import React, { useRef, useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 // Dados para as telas de onboarding
 const onboardingSteps = [
   {
-    id: '1',
-    image: require('@/assets/images/onboarding/onboarding01.png'), // Substitua pelos caminhos corretos
-    title: 'Bem vindo ao\nGo.planner',
-    description: 'Vamos começar sua jornada.',
+    id: "1",
+    image: require("@/assets/images/onboarding/onboarding01.png"), // Substitua pelos caminhos corretos
+    title: "Bem vindo ao\nGo.planner",
+    description: "Vamos começar sua jornada.",
   },
   {
-    id: '2',
-    image: require('@/assets/images/onboarding/onboarding02.png'),
-    title: 'Descubra',
-    description: 'Encontre destinos incríveis que combinam com você.',
+    id: "2",
+    image: require("@/assets/images/onboarding/onboarding02.png"),
+    title: "Descubra",
+    description: "Encontre destinos incríveis que combinam com você.",
   },
   {
-    id: '3',
-    image: require('@/assets/images/onboarding/onboarding03.png'),
-    title: 'Planeje',
-    description: 'Organize cada detalhe e viaje sem preocupações.',
+    id: "3",
+    image: require("@/assets/images/onboarding/onboarding03.png"),
+    title: "Planeje",
+    description: "Organize cada detalhe e viaje sem preocupações.",
   },
   {
-    id: '4',
-    image: require('@/assets/images/onboarding/onboarding04.png'),
-    title: 'Explore',
-    description: 'Viva experiências únicas em cada lugar.',
+    id: "4",
+    image: require("@/assets/images/onboarding/onboarding04.png"),
+    title: "Explore",
+    description: "Viva experiências únicas em cada lugar.",
   },
 ];
 
@@ -42,20 +49,23 @@ export default function OnboardingScreen() {
   const handleComplete = async () => {
     try {
       await completeOnboarding();
-      console.log('Onboarding completado!');
+      console.log("Onboarding completado!");
       // O redirecionamento é feito automaticamente pelo useAuth
     } catch (e) {
-      console.error('Erro ao completar onboarding', e);
+      console.error("Erro ao completar onboarding", e);
     }
   };
 
   // Função para rolar para o próximo slide
   const handleNext = () => {
     if (activeIndex < onboardingSteps.length - 1) {
-      scrollRef.current?.scrollTo({ x: width * (activeIndex + 1), animated: true });
+      scrollRef.current?.scrollTo({
+        x: width * (activeIndex + 1),
+        animated: true,
+      });
     }
   };
-  
+
   // Atualiza o índice ativo ao rolar
   const handleScroll = (event: any) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / width);
@@ -76,11 +86,14 @@ export default function OnboardingScreen() {
         bounces={false}
       >
         {onboardingSteps.map((step) => (
-          <ImageBackground key={step.id} source={step.image} style={[styles.slide, { width }]}>
-
+          <ImageBackground
+            key={step.id}
+            source={step.image}
+            style={[styles.slide, { width }]}
+          >
             <View style={styles.overlay} />
             <Image
-              source={require('@/assets/images/logo-white.svg')}
+              source={require("@/assets/images/logo-white.svg")}
               style={styles.logo}
             />
             <Text style={styles.title}>{step.title}</Text>
@@ -88,10 +101,10 @@ export default function OnboardingScreen() {
           </ImageBackground>
         ))}
       </ScrollView>
-      
+
       {/* Indicador de progresso e botão */}
-     
-{/* <BlurView
+
+      {/* <BlurView
   style={{
     position: 'absolute',
     width: '100%',
@@ -108,25 +121,26 @@ export default function OnboardingScreen() {
     O BLUR ESTÁ AQUI?
   </Text>
 </BlurView> */}
-      <BlurView 
-        style={[styles.footer, { width }]}
-        tint="dark" 
-        intensity={50}
-      >
+      <BlurView style={[styles.footer, { width }]} tint="dark" intensity={50}>
         <View style={styles.dotsContainer}>
           {onboardingSteps.map((_, index) => (
             <View
               key={index}
               style={[
                 styles.dot,
-                { backgroundColor: index === activeIndex ? '#FF5733' : '#FFF' },
+                { backgroundColor: index === activeIndex ? "#FF5733" : "#FFF" },
               ]}
             />
           ))}
         </View>
-            
-        <Pressable style={styles.button} onPress={isLastStep ? handleComplete : handleNext}>
-          <Text style={styles.buttonText}>{isLastStep ? 'Começar' : 'Continuar'}</Text>
+
+        <Pressable
+          style={styles.button}
+          onPress={isLastStep ? handleComplete : handleNext}
+        >
+          <Text style={styles.buttonText}>
+            {isLastStep ? "Começar" : "Continuar"}
+          </Text>
         </Pressable>
       </BlurView>
     </View>
@@ -137,52 +151,51 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: "#000",
   },
   slide: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    justifyContent: "flex-start",
+    alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 140
+    paddingTop: 140,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Overlay escuro para legibilidade
+    backgroundColor: "rgba(0, 0, 0, 0.4)", // Overlay escuro para legibilidade
   },
   title: {
     fontSize: 40,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
     marginBottom: 16,
   },
   description: {
     fontSize: 16,
-    color: '#eee',
-    textAlign: 'center',
+    color: "#eee",
+    textAlign: "center",
   },
   logo: {
     width: 67,
     height: 80,
-    marginBottom: 8
+    marginBottom: 8,
   },
   footer: {
-    position: 'absolute',
-    bottom:0,
+    position: "absolute",
+    bottom: 0,
     left: 0,
     paddingHorizontal: 20,
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 20,
     paddingBottom: 40,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    overflow: 'hidden', // Importante para o borderRadius funcionar com o blur
+    overflow: "hidden", // Importante para o borderRadius funcionar com o blur
     // Cor de fundo semitransparente para o efeito de vidro fosco
-    
   },
   dotsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
   },
   dot: {
@@ -192,16 +205,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingVertical: 15,
     paddingHorizontal: 40,
     borderRadius: 30,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
   buttonText: {
-    color: '#FF5733',
+    color: "#FF5733",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

@@ -1,3 +1,4 @@
+import GradientText from "@/components/GradientText"; // <-- Importando o componente GradientText
 import Header from "@/components/Header";
 import ListTrips from "@/components/home/listTrips";
 import TabSelector from "@/components/tab-selector";
@@ -5,21 +6,26 @@ import { ThemedText } from "@/components/themed-text";
 import ThemedTitle from "@/components/themed-title";
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import GradientText from "@/components/GradientText"; // <-- Importando o componente GradientText
-
 
 export default function HomeScreen() {
+  // Protege a rota verificando autenticação
+  const { isLoading } = useAuth();
+
+  // Enquanto carrega, não renderiza nada
+  if (isLoading) {
+    return null;
+  }
   const btnPlus = useThemeColor({}, "btnPlus");
   const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
-  const routerInstance = useRouter(); 
+  const routerInstance = useRouter();
   const handleNavigateToNotifications = () => {
     routerInstance.push("/notifications");
   };
@@ -193,10 +199,10 @@ export default function HomeScreen() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "Todas":
-        return <ListTrips userTrips={userTrips} />; 
+        return <ListTrips userTrips={userTrips} />;
+    }
   };
-}
-  const bgPrimary = useThemeColor({}, 'bgPrimary');
+  const bgPrimary = useThemeColor({}, "bgPrimary");
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bgPrimary }}>
       <ThemedView style={styles.container} bgName="bgPrimary">
@@ -205,7 +211,12 @@ export default function HomeScreen() {
           onPress={() => router.push("/createTrip")}
         >
           <View style={[styles.addButton, { backgroundColor: bgBtnPlus }]}>
-            <ThemedText type="sm" isSemiBold={true} colorName="secondary" darkColor="#fff">
+            <ThemedText
+              type="sm"
+              isSemiBold={true}
+              colorName="secondary"
+              darkColor="#fff"
+            >
               {" "}
               Nova viagem{" "}
             </ThemedText>
@@ -218,7 +229,9 @@ export default function HomeScreen() {
             <View style={styles.nameTitle}>
               <Image source={{ uri: user.avatar }} style={styles.avatar} />
 
-            <GradientText style={styles.gradientName}> {/* Adicionei um estilo */}
+              <GradientText style={styles.gradientName}>
+                {" "}
+                {/* Adicionei um estilo */}
                 Olá, {user.name}
               </GradientText>
             </View>
@@ -311,7 +324,8 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 4,
   },
-  gradientName: { // <-- Adicionei esse estilo
+  gradientName: {
+    // <-- Adicionei esse estilo
     fontSize: 18, // Tamanho 'default' do ThemedText
     lineHeight: 24, // LineHeight 'default' do ThemedText
   },
