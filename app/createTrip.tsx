@@ -189,7 +189,7 @@ export default function CreateTrip() {
                 colorName="secondary"
                 darkColor="#fff"
               >
-                Nova viagem
+                Nova atividade
               </ThemedText>
               <Ionicons name="add" size={40} color={btnPlus} />
             </View>

@@ -23,12 +23,12 @@ SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
-  const { isLoading } = useAuth();
+  // const { isLoading } = useAuth();
 
-  // Enquanto está verificando a autenticação, não renderiza nada
-  if (isLoading) {
-    return null;
-  }
+  // // Enquanto está verificando a autenticação, não renderiza nada
+  // if (isLoading) {
+  //   return null;
+  // }
 
   return (
     <SafeAreaProvider>

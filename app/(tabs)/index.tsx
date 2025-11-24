@@ -17,12 +17,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   // Protege a rota verificando autenticação
-  const { isLoading } = useAuth();
+  // const { isLoading } = useAuth();
 
-  // Enquanto carrega, não renderiza nada
-  if (isLoading) {
-    return null;
-  }
+  // // Enquanto carrega, não renderiza nada
+  // if (isLoading) {
+  //   return null;
+  // }
   const btnPlus = useThemeColor({}, "btnPlus");
   const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
   const routerInstance = useRouter();
