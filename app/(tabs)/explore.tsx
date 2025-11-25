@@ -18,6 +18,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import Header from '@/components/Header';
+import { useAuth } from '@/hooks/useAuth';
 
 // --- XML DO SVG COPIADO DIRETAMENTE DO FIGMA ---
 const NoFriendsSvg = `<svg width="82" height="82" viewBox="0 0 82 82" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M27.25 23.85c0 3.61 1.44 7.08 3.99 9.63 2.56 2.56 6.03 3.99 9.64 3.99 3.61 0 7.08-1.43 9.64-3.99 2.55-2.55 3.99-6.02 3.99-9.63 0-3.62-1.44-7.08-3.99-9.64-2.56-2.55-6.03-3.99-9.64-3.99-3.61 0-7.08 1.44-9.64 3.99-2.55 2.56-3.99 6.02-3.99 9.64zM20.44 71.54v-6.81c0-3.62 1.44-7.08 3.99-9.64 2.56-2.55 6.02-3.99 9.64-3.99h11.92M74.95 74.95L57.91 57.91M57.91 74.95L74.95 57.91" stroke="#C70039" stroke-width="6.81" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -59,6 +60,13 @@ const INITIAL_FRIENDS: Friend[] = [
 ];
 
 export default function ExploreScreen() {
+  const { isLoading } = useAuth();
+
+  // Enquanto carrega, não renderiza nada
+  if (isLoading) {
+    return null;
+  }
+
   const router = useRouter();
   
   // --- ESTADOS ---

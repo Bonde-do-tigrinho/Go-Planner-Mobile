@@ -1,62 +1,73 @@
-import React from 'react';
+import Button from "@/components/CustomButton";
+import { ThemedInput } from "@/components/themed-input";
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useAuth } from "@/hooks/useAuth";
+import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "expo-router";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
-  StyleSheet, ScrollView, Pressable, KeyboardAvoidingView, Platform, SafeAreaView, View, Image, Alert
-} from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Link, useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ThemedInput } from '@/components/themed-input';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import Button from '@/components/CustomButton';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeColor } from '@/hooks/use-theme-color';
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { z } from "zod";
 
 const loginSchema = z.object({
-  email: z.string().email('Por favor, insira um e-mail válido.'),
-  password: z.string().min(9, 'A senha deve ter pelo menos 9 caracteres.'),
+  email: z.string().email("Por favor, insira um e-mail válido."),
+  password: z.string().min(9, "A senha deve ter pelo menos 9 caracteres."),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
-  const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
-  const router = useRouter();
-  
+  const { signIn } = useAuth();
+
   const onSubmit = async (data: LoginFormData) => {
     const { email, password } = data;
     try {
-      // Use o IP da sua máquina na rede
-      const response = await fetch(
-        `http://192.168.15.10:8082/api/users/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email,
-            senha: password,
-          }),
-        }
-      );
+      // Usa a variável de ambiente com o IP da rede
+      const apiUrl =
+        process.env.EXPO_PUBLIC_API_URL || "http://192.168.15.10:8082/api";
+      console.log("API URL:", apiUrl);
+
+      const response = await fetch(`${apiUrl}/users/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          senha: password,
+        }),
+      });
 
       if (response.ok) {
         const responseData = await response.json();
         console.log("Login bem-sucedido:", responseData);
-        
-        // Salvar o token no AsyncStorage
+
+        // Usar o hook useAuth para salvar o token
         if (responseData.token) {
-          await AsyncStorage.setItem('userToken', responseData.token);
-          await AsyncStorage.setItem('userEmail', email);
-          console.log('Token salvo com sucesso');
+          await signIn(responseData.token, email);
+          console.log("Token salvo com sucesso");
         }
-        
-        router.push("/(tabs)");
+
+        // O redirecionamento é feito automaticamente pelo useAuth
       } else {
         // ERRO DA API: O servidor respondeu com um erro
         const errorData = await response.json();
@@ -65,17 +76,20 @@ export default function LoginScreen() {
         if (response.status === 400) {
           Alert.alert(
             "Credenciais inválidas",
-            errorData.message || "E-mail ou senha incorretos. Por favor, tente novamente."
+            errorData.message ||
+              "E-mail ou senha incorretos. Por favor, tente novamente."
           );
         } else if (response.status === 404) {
           Alert.alert(
             "Usuário não encontrado",
-            errorData.message || "Este e-mail não está cadastrado. Por favor, crie uma conta."
+            errorData.message ||
+              "Este e-mail não está cadastrado. Por favor, crie uma conta."
           );
         } else {
           Alert.alert(
             "Erro no login",
-            errorData.message || "Não foi possível fazer login. Tente novamente."
+            errorData.message ||
+              "Não foi possível fazer login. Tente novamente."
           );
         }
         // Retornar para não deixar o Expo mostrar o erro padrão
@@ -102,18 +116,18 @@ export default function LoginScreen() {
     }
   };
 
-  const iconColor = useThemeColor({}, 'primary');
+  const iconColor = useThemeColor({}, "primary");
   return (
     <ThemedView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {/* MUDANÇA: Usando ThemedText para o título */}
-          <ThemedText type="title" colorName='textPrimary' style={styles.title}>
+          <ThemedText type="title" colorName="textPrimary" style={styles.title}>
             Bem-vindo de volta
-            <Ionicons name={'ellipse'} color={iconColor} size={10} />
+            <Ionicons name={"ellipse"} color={iconColor} size={10} />
           </ThemedText>
 
           <Controller
@@ -121,7 +135,7 @@ export default function LoginScreen() {
             name="email"
             render={({ field: { onChange, onBlur, value } }) => (
               <ThemedInput
-                textInputName='textSecondary'
+                textInputName="textSecondary"
                 label="E-mail:"
                 icon="mail-outline"
                 placeholder="Digite seu e-mail"
@@ -140,7 +154,7 @@ export default function LoginScreen() {
             name="password"
             render={({ field: { onChange, onBlur, value } }) => (
               <ThemedInput
-                textInputName='textSecondary'
+                textInputName="textSecondary"
                 label="Senha:"
                 icon="lock-closed-outline"
                 placeholder="Digite sua senha"
@@ -152,7 +166,7 @@ export default function LoginScreen() {
                 isPassword
               />
             )}
-          />  
+          />
           <Link href="/(auth)/forgot-password" asChild>
             <Pressable>
               <ThemedText colorName="tint" style={styles.forgotPassword}>
@@ -163,7 +177,7 @@ export default function LoginScreen() {
           <Button
             title="Fazer login"
             onPress={handleSubmit(onSubmit)}
-            disabled= {isSubmitting}
+            disabled={isSubmitting}
             variant="gradient-primary"
             iconName="arrow-forward"
             size="xl"
@@ -172,25 +186,44 @@ export default function LoginScreen() {
 
           <View style={styles.separatorContainer}>
             <ThemedView style={styles.line} bgName="borderPrimary" />
-            <ThemedText colorName="icon" style={styles.separatorText}>ou</ThemedText>
+            <ThemedText colorName="icon" style={styles.separatorText}>
+              ou
+            </ThemedText>
             <ThemedView style={styles.line} bgName="borderPrimary" />
           </View>
-          
+
           {/* MUDANÇA: Botões sociais agora usam componentes temáticos */}
-          <Pressable onPress={() => console.log('Login com Google')}>
-            <ThemedView style={styles.socialButton} borderName="borderPrimary" borderWidth={1}>
-              <Image source={require('@/assets/images/google.png')} style={styles.socialIcon} />
-              <ThemedText  colorName='textTerciary'>Continue com Google</ThemedText>
+          <Pressable onPress={() => console.log("Login com Google")}>
+            <ThemedView
+              style={styles.socialButton}
+              borderName="borderPrimary"
+              borderWidth={1}
+            >
+              <Image
+                source={require("@/assets/images/google.png")}
+                style={styles.socialIcon}
+              />
+              <ThemedText colorName="textTerciary">
+                Continue com Google
+              </ThemedText>
             </ThemedView>
           </Pressable>
 
-          <Pressable onPress={() => console.log('Login com Facebook')}>
-            <ThemedView style={styles.socialButton} borderName="borderPrimary" borderWidth={1}>
-              <Image source={require('@/assets/images/facebook.png')} style={styles.socialIcon} />
-              <ThemedText colorName='textTerciary'>Continue com Facebook</ThemedText>
+          <Pressable onPress={() => console.log("Login com Facebook")}>
+            <ThemedView
+              style={styles.socialButton}
+              borderName="borderPrimary"
+              borderWidth={1}
+            >
+              <Image
+                source={require("@/assets/images/facebook.png")}
+                style={styles.socialIcon}
+              />
+              <ThemedText colorName="textTerciary">
+                Continue com Facebook
+              </ThemedText>
             </ThemedView>
           </Pressable>
-
         </ScrollView>
       </KeyboardAvoidingView>
     </ThemedView>
@@ -202,7 +235,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
     paddingHorizontal: 24,
     paddingBottom: 40,
   },
@@ -210,15 +243,15 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   forgotPassword: {
-    textAlign: 'right',
+    textAlign: "right",
     marginBottom: 24,
-    fontWeight: '500',
-    fontSize: 14
+    fontWeight: "500",
+    fontSize: 14,
   },
   loginButton: {
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -226,11 +259,11 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   buttonDisabled: {
-    backgroundColor: '#ccc', // Podemos criar uma cor 'disabled' no tema
+    backgroundColor: "#ccc", // Podemos criar uma cor 'disabled' no tema
   },
   separatorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 32,
   },
   line: {
@@ -241,9 +274,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 10,
     paddingVertical: 14,
     marginBottom: 12,
@@ -254,4 +287,3 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
 });
-      

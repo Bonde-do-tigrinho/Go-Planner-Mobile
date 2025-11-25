@@ -55,21 +55,21 @@ export default function RegisterScreen() {
   const onSubmit = async (data: RegisterFormData) => {
     const { name, email, password } = data;
     try {
-      // Use o IP da sua máquina na rede, não localhost
-      const response = await fetch(
-        `http://192.168.15.10:8082/api/users/cadastrar`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            nome: name,
-            email: email,
-            senha: password,
-          }),
-        }
-      );
+      const apiUrl =
+        process.env.EXPO_PUBLIC_API_URL || "http://192.168.15.10:8082/api";
+      console.log("API URL:", apiUrl);
+      
+      const response = await fetch(`${apiUrl}/users/cadastrar`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome: name,
+          email: email,
+          senha: password,
+        }),
+      });
 
       if (response.ok) {
         const responseData = await response.json();
