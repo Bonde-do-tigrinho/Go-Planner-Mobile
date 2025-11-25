@@ -3,7 +3,7 @@ import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Ionicons } from "@expo/vector-icons"; // Importamos o Ionicons
 import { Tabs } from "expo-router";
-import React from "react";
+import  React from "react";
 import { Platform } from "react-native";
 
 export default function TabLayout() {

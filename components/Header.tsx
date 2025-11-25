@@ -5,12 +5,12 @@ import { ThemedView } from "./themed-view";
 import { BtnThemeToggleButton } from "./ui/btnToggleTheme";
 import React from "react";
 
-// 1. Adicione a nova prop
 interface HeaderProps {
   children: React.ReactNode;
   onNotificationPress?: () => void;
   onBackPress?: () => void;
-  hideNotificationIcon?: boolean; // <-- nova prop
+  hideNotificationIcon?: boolean; // Prop para esconder o sino
+  hideThemeToggle?: boolean;      // Prop para esconder o sol/lua
 }
 
 export default function Header(props: HeaderProps) {
@@ -32,9 +32,13 @@ export default function Header(props: HeaderProps) {
       </ThemedView>
 
       <ThemedView bgName="bgPrimary" style={styles.iconsContainer}>
-        <BtnThemeToggleButton />
+        
+        {/* LÓGICA: Só mostra o botão se hideThemeToggle for FALSO ou INDEFINIDO */}
+        {!props.hideThemeToggle && (
+           <BtnThemeToggleButton />
+        )}
 
-        {/* 2. Renderizei o ícone de sino com condição */}
+        {/* LÓGICA: Só mostra o sino se hideNotificationIcon for FALSO ou INDEFINIDO */}
         {!props.hideNotificationIcon && (
           <Pressable
             onPress={props.onNotificationPress}

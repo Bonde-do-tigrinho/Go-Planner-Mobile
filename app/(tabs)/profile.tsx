@@ -7,14 +7,14 @@ import { ThemedView } from "@/components/themed-view";
 import { StatusBar } from "expo-status-bar";
 
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import * as React from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 export default function ProfileScreen() {
   const tabs = ["Dados pessoais", "Histórico de viagem", "Configurações"];
-  const [activeTab, setActiveTab] = useState(tabs[0]);
+  const [activeTab, setActiveTab] = React.useState(tabs[0]);
   const router = useRouter(); 
 
   const handleNavigateToNotifications = () => {
@@ -62,7 +62,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     width: "100%",
-    // alignItems: "center", // <-- ESTA LINHA É O PROBLEMA. REMOVA ELA.
     gap: 20,
     paddingVertical: 10,
     paddingHorizontal: 16,
