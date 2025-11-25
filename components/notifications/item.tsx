@@ -50,7 +50,7 @@ export default function NotificationItem({
                 </ThemedText>
               </ThemedView>
             </TouchableOpacity>
-            {/* Botão Recusar (usando bgTertiary que vi no seu theme.ts) */}
+            {/* Botão Recusar (usando bgTertiary) */}
             <TouchableOpacity>
               <ThemedView bgName="btnDecline" style={styles.button}>
                 <ThemedText colorName="secondary" isSemiBold>

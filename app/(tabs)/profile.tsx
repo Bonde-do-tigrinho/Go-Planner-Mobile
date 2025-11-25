@@ -73,7 +73,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     width: "100%",
-    // alignItems: "center", // <-- ESTA LINHA É O PROBLEMA. REMOVA ELA.
     gap: 20,
     paddingVertical: 10,
     paddingHorizontal: 16,

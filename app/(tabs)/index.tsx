@@ -17,18 +17,27 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   // Protege a rota verificando autenticação
-  // const { isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
-  // // Enquanto carrega, não renderiza nada
-  // if (isLoading) {
-  //   return null;
-  // }
+  // IMPORTANTE: Todos os hooks devem ser chamados antes do return condicional
   const btnPlus = useThemeColor({}, "btnPlus");
   const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
   const routerInstance = useRouter();
+  const bgPrimary = useThemeColor({}, "bgPrimary");
+
+  // Constantes que precisam vir antes do useState
+  const tabs = ["Todas", "Suas viagens", "Compartilhadas"];
+  const [activeTab, setActiveTab] = useState(tabs[0]);
+
   const handleNavigateToNotifications = () => {
     routerInstance.push("/notifications");
   };
+
+  // Enquanto carrega, não renderiza nada (DEPOIS de todos os hooks)
+  if (isLoading) {
+    return null;
+  }
+
   const user = {
     name: "Nicolas Yanase",
     avatar: "https://avatars.githubusercontent.com/u/63155478?v=4",
@@ -192,17 +201,13 @@ export default function HomeScreen() {
     },
   ];
 
-  const tabs = ["Todas", "Suas viagens", "Compartilhadas"];
-
-  const [activeTab, setActiveTab] = useState(tabs[0]);
-
   const renderTabContent = () => {
     switch (activeTab) {
       case "Todas":
         return <ListTrips userTrips={userTrips} />;
     }
   };
-  const bgPrimary = useThemeColor({}, "bgPrimary");
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bgPrimary }}>
       <ThemedView style={styles.container} bgName="bgPrimary">
