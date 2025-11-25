@@ -15,12 +15,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   // Protege a rota verificando autenticação
-  const { isLoading } = useAuth();
+  // const { isLoading } = useAuth();
 
-  // Enquanto carrega, não renderiza nada
-  if (isLoading) {
-    return null;
-  }
+  // // Enquanto carrega, não renderiza nada
+  // if (isLoading) {
+  //   return null;
+  // }
 
   const tabs = ["Dados pessoais", "Histórico de viagem", "Configurações"];
   const [activeTab, setActiveTab] = useState(tabs[0]);
