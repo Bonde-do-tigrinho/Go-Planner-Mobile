@@ -63,10 +63,7 @@ export default function ExploreScreen() {
   const { isLoading } = useAuth();
 
   // Enquanto carrega, não renderiza nada
-  if (isLoading) {
-    return null;
-  }
-
+  
   const router = useRouter();
   
   // --- ESTADOS ---
@@ -102,6 +99,10 @@ export default function ExploreScreen() {
   };
 
   const cancelDelete = () => setFriendToDelete(null);
+
+  if (isLoading) {
+    return null;
+  }
 
   const renderFriendItem = ({ item }: { item: Friend }) => {
     return (
