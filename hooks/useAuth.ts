@@ -24,7 +24,6 @@ export function useAuth() {
   }, []);
 
   // Gerencia redirecionamentos baseado APENAS no estado de autenticação
-  // NÃO monitora segments para evitar redirecionamentos durante navegação normal
   useEffect(() => {
     if (authState.isLoading) return;
 
@@ -55,7 +54,7 @@ export function useAuth() {
       router.replace("/(tabs)");
       return;
     }
-  }, [authState]); // REMOVIDO segments das dependências!
+  }, [authState]); // REMOVIDO segments - só monitora mudanças de authState
 
   const loadAuthState = async () => {
     try {

@@ -1,70 +1,177 @@
-import React, { useState } from 'react';
+import SheetModal from "@/components/modal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  StyleSheet,
+  ActivityIndicator,
+  Alert,
   Image,
   ScrollView,
-} from 'react-native';
-import SheetModal from '@/components/modal';
-import { ThemedView } from '../themed-view';
-import Button from '../CustomButton';
-import { ThemedText } from '../themed-text';
+  StyleSheet,
+  View,
+} from "react-native";
+import Button from "../CustomButton";
+import { ThemedText } from "../themed-text";
+import { ThemedView } from "../themed-view";
 
-import { ThemedInput } from '@/components/themed-input';
-import EditProfileForm from './editProfileForm';
+import { ThemedInput } from "@/components/themed-input";
+import EditProfileForm from "./editProfileForm";
+
+const API_URL = "http://192.168.15.10:8082/api";
 
 export default function Info() {
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 🔹 Dados simulando o usuário logado
+  // 🔹 Dados do usuário vindos da API
   const [userData, setUserData] = useState({
-    phone: '+55 11 97730-4028',
-    email: 'nicolasyanase18@gmail.com',
-    password: '************',
-    name: 'Nicolas Yanase',
-    avatar: 'https://avatars.githubusercontent.com/u/63155478?v=4',
+    email: "",
+    password: "************",
+    name: "",
+    avatar: "https://avatars.githubusercontent.com/u/63155478?v=4",
   });
+
+  // 🔹 Buscar dados do usuário ao montar o componente
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    try {
+      setIsLoading(true);
+      const token = await AsyncStorage.getItem("userToken");
+
+      if (!token) {
+        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/users/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Dados do usuário:", data);
+
+        setUserData({
+          email: data.email,
+          password: "************",
+          name: data.nome,
+          avatar:
+            data.foto || "https://avatars.githubusercontent.com/u/63155478?v=4",
+        });
+      } else {
+        const errorData = await response.json();
+        console.error("Erro ao buscar dados:", errorData);
+        Alert.alert("Erro", "Não foi possível carregar seus dados.");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados do usuário:", error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
 
   // 🔹 Função para atualizar as informações do usuário
-  const handleUpdateProfile = (data: {
-    phone: string;
+  const handleUpdateProfile = async (data: {
+    nome: string;
     email: string;
-    password?: string;
+    senhaAtual?: string;
+    novaSenha?: string;
+    confirmarSenha?: string;
   }) => {
-    console.log('Novos dados:', data);
-    setUserData((prev) => ({
-      ...prev,
-      phone: data.phone,
-      email: data.email,
-      password: data.password ? '************' : prev.password,
-    }));
-    closeModal();
+    console.log("Novos dados:", data);
+
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+
+      if (!token) {
+        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      // Prepara o body da requisição
+      const requestBody: any = {
+        nome: data.nome,
+        email: data.email,
+      };
+
+      // Adiciona campos de senha apenas se foram preenchidos
+      if (data.senhaAtual && data.novaSenha) {
+        requestBody.senhaAtual = data.senhaAtual;
+        requestBody.senhaNova = data.novaSenha;
+      }
+
+      const response = await fetch(`${API_URL}/users/me`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (response.ok) {
+        // Atualiza os dados localmente
+        setUserData((prev) => ({
+          ...prev,
+          name: data.nome,
+          email: data.email,
+        }));
+
+        Alert.alert("Sucesso", "Informações atualizadas com sucesso!");
+        closeModal();
+      } else {
+        const errorData = await response.json();
+        console.error("Erro ao atualizar dados:", errorData);
+
+        if (response.status === 400) {
+          Alert.alert("Erro", errorData.message || "Senha atual incorreta.");
+        } else {
+          Alert.alert("Erro", "Não foi possível atualizar seus dados.");
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar dados:", error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <ThemedView
+        bgName="bgPrimary"
+        style={[styles.container, styles.centered]}
+      >
+        <ActivityIndicator size="large" color="#FF5733" />
+        <ThemedText colorName="textSecondary" style={{ marginTop: 12 }}>
+          Carregando dados...
+        </ThemedText>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView bgName="bgPrimary" style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.profileHeader}>
-          <Image
-            source={{ uri: userData.avatar }}
-            style={styles.avatar}
-          />
+          <Image source={{ uri: userData.avatar }} style={styles.avatar} />
           <View style={styles.userInfoContainer}>
             <ThemedText colorName="textPrimary" style={styles.name}>
               {userData.name}
             </ThemedText>
-            <ThemedText colorName="textSecondary" style={styles.phone}>
-              {userData.phone}
-            </ThemedText>
           </View>
         </View>
 
-        <View 
-            style={styles.formContainer} pointerEvents="none"
-        >
+        <View style={styles.formContainer} pointerEvents="none">
           <ThemedInput
             textInputName="textSecondary"
             label="Email"
@@ -81,17 +188,16 @@ export default function Info() {
             isPassword={true}
             editable={false}
           />
-
         </View>
-        <View style={{marginTop:20}} />
-          <Button
-            title="Editar informações"
-            onPress={openModal}
-            variant="outline-orange"
-            iconName="pencil"
-            size="xl"
-            width="100%"
-          />
+        <View style={{ marginTop: 20 }} />
+        <Button
+          title="Editar informações"
+          onPress={openModal}
+          variant="outline-orange"
+          iconName="pencil"
+          size="xl"
+          width="100%"
+        />
       </ScrollView>
 
       {/* 🔹 Modal com formulário de edição */}
@@ -101,7 +207,7 @@ export default function Info() {
         title="Editar informações"
       >
         <EditProfileForm
-          initialData={userData}
+          initialData={{ nome: userData.name, email: userData.email }}
           onSubmit={handleUpdateProfile}
         />
       </SheetModal>
@@ -114,13 +220,18 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingVertical: 20,
   },
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   profileHeader: {
     marginBottom: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   userInfoContainer: {
     marginLeft: 25,
+    maxWidth: 240
   },
   avatar: {
     width: 100,
@@ -129,16 +240,11 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 22,
-    fontWeight: 'bold',
-  },
-  phone: {
-    fontSize: 16,
-    marginTop: 4,
+    fontWeight: "bold",
   },
   formContainer: {
-    width: '100%',
+    width: "100%",
     gap: 16,
     opacity: 0.6,
-    
   },
 });
