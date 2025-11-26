@@ -61,10 +61,10 @@ export default function LoginScreen() {
         const responseData = await response.json();
         console.log("Login bem-sucedido:", responseData);
 
-        // Usar o hook useAuth para salvar o token
+        // Usar o hook useAuth para salvar o token e userId
         if (responseData.token) {
-          await signIn(responseData.token, email);
-          console.log("Token salvo com sucesso");
+          await signIn(responseData.token, email, responseData.userInfo.id);
+          console.log("Token e userId salvos com sucesso");
         }
 
         // O redirecionamento é feito automaticamente pelo useAuth

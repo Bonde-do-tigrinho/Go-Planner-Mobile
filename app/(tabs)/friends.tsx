@@ -1,0 +1,551 @@
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Modal,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+// importação necessária pra usar o ícone SVG do Figma
+import { SvgXml } from "react-native-svg";
+
+import Header from "@/components/Header";
+import { ThemedText } from "@/components/themed-text";
+import ThemedTitle from "@/components/themed-title";
+import { ThemedView } from "@/components/themed-view";
+import { useThemeColor } from "@/hooks/use-theme-color";
+
+// --- XML DO SVG COPIADO DIRETAMENTE DO FIGMA ---
+const NoFriendsSvg = `<svg width="82" height="82" viewBox="0 0 82 82" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M27.25 23.85c0 3.61 1.44 7.08 3.99 9.63 2.56 2.56 6.03 3.99 9.64 3.99 3.61 0 7.08-1.43 9.64-3.99 2.55-2.55 3.99-6.02 3.99-9.63 0-3.62-1.44-7.08-3.99-9.64-2.56-2.55-6.03-3.99-9.64-3.99-3.61 0-7.08 1.44-9.64 3.99-2.55 2.56-3.99 6.02-3.99 9.64zM20.44 71.54v-6.81c0-3.62 1.44-7.08 3.99-9.64 2.56-2.55 6.02-3.99 9.64-3.99h11.92M74.95 74.95L57.91 57.91M57.91 74.95L74.95 57.91" stroke="#C70039" stroke-width="6.81" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://192.168.15.10:8082/api";
+
+// TIPO
+type Friend = {
+  id: string;
+  nome: string;
+  email: string;
+  foto?: string | null;
+};
+
+export default function FriendsScreen() {
+  const router = useRouter();
+
+  // --- ESTADOS ---
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friendToDelete, setFriendToDelete] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // --- HOOKS DE CORES ---
+  const bgPrimary = useThemeColor({}, "bgPrimary");
+  const cardBg = useThemeColor(
+    { light: "#FFFFFF", dark: "#252525" },
+    "bgPrimary"
+  );
+  const borderColor = useThemeColor({}, "borderPrimary");
+  const iconColor = useThemeColor({}, "icon");
+  const primaryColor = useThemeColor({}, "primary");
+  const secondaryColor = useThemeColor({}, "secondary");
+  const btnPlus = useThemeColor({}, "btnPlus");
+  const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
+  const avatarPlaceholderBg = useThemeColor(
+    { light: "#F4F4F5", dark: "#3F3F46" },
+    "bgSecondary"
+  );
+
+  // Cores do Modal de Confirmação
+  const btnNoColor = "#C70039";
+  const btnYesColor = "#FF5733";
+
+  const handleNavigateToNotifications = () => {
+    router.push("/notifications");
+  };
+
+  // 🔹 Buscar dados do usuário e amigos ao montar o componente
+  useEffect(() => {
+    fetchUserAndFriends();
+  }, []);
+
+  const fetchUserAndFriends = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      const [token, userIdFromStorage] = await Promise.all([
+        AsyncStorage.getItem("userToken"),
+        AsyncStorage.getItem("userId"),
+      ]);
+
+      if (!token) {
+        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      if (!userIdFromStorage) {
+        Alert.alert(
+          "Erro",
+          "ID do usuário não encontrado. Faça login novamente."
+        );
+        return;
+      }
+
+      setUserId(userIdFromStorage);
+
+      // Busca os amigos usando o userId
+      const friendsResponse = await fetch(
+        `${API_URL}/friends/${userIdFromStorage}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (friendsResponse.ok) {
+        const friendsData = await friendsResponse.json();
+        console.log("Amigos carregados:", friendsData);
+        setFriends(friendsData);
+      } else {
+        const errorData = await friendsResponse.json();
+        console.error("Erro ao buscar amigos:", errorData);
+        Alert.alert("Erro", "Não foi possível carregar seus amigos.");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados:", error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    } finally {
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const onRefresh = () => {
+    fetchUserAndFriends(true);
+  };
+
+  // Funções de Controle do Modal
+  const promptDelete = (id: string) => setFriendToDelete(id);
+
+  const confirmDelete = async () => {
+    if (friendToDelete && userId) {
+      try {
+        const token = await AsyncStorage.getItem("userToken");
+
+        if (!token) {
+          Alert.alert("Erro", "Token não encontrado.");
+          return;
+        }
+
+        // Chamada DELETE para a API
+        const response = await fetch(`${API_URL}/friend/remove-friend`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            solicitanteId: userId,
+            solicitadoId: friendToDelete,
+          }),
+        });
+
+        if (response.ok) {
+          // Remove localmente após sucesso na API
+          setFriends((current) =>
+            current.filter((friend) => friend.id !== friendToDelete)
+          );
+          setFriendToDelete(null);
+          Alert.alert("Sucesso", "Amigo removido com sucesso!");
+        } else {
+          const errorData = await response.json();
+          console.error("Erro ao remover amigo:", errorData);
+          Alert.alert("Erro", "Não foi possível remover o amigo.");
+        }
+      } catch (error) {
+        console.error("Erro ao remover amigo:", error);
+        Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+      }
+    }
+  };
+
+  const cancelDelete = () => setFriendToDelete(null);
+
+  const renderFriendItem = ({ item }: { item: Friend }) => {
+    return (
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: cardBg, borderColor: borderColor },
+        ]}
+      >
+        <View style={styles.cardContent}>
+          {/* Lógica do Avatar com Borda Laranja */}
+          {item.foto ? (
+            <Image
+              source={{ uri: item.foto }}
+              style={[styles.avatar, { borderColor: primaryColor }]}
+            />
+          ) : (
+            <View
+              style={[
+                styles.avatar,
+                styles.avatarPlaceholder,
+                {
+                  backgroundColor: avatarPlaceholderBg,
+                  borderColor: primaryColor,
+                },
+              ]}
+            >
+              <Ionicons name="person" size={24} color={primaryColor} />
+            </View>
+          )}
+
+          <View style={styles.infoContainer}>
+            <ThemedText
+              type="default"
+              isSemiBold
+              colorName="textPrimary"
+              style={styles.nameText}
+            >
+              {item.nome}
+            </ThemedText>
+            <ThemedText colorName="textSecondary" style={styles.emailText}>
+              {item.email}
+            </ThemedText>
+          </View>
+        </View>
+
+        <Pressable onPress={() => promptDelete(item.id)} hitSlop={10}>
+          <Ionicons name="trash-outline" size={24} color={iconColor} />
+        </Pressable>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgPrimary }}>
+      <ThemedView style={styles.container} bgName="bgPrimary">
+        {/* HEADER LIMPO: Sem ícones na direita */}
+        <Header
+          onNotificationPress={handleNavigateToNotifications}
+          hideThemeToggle={false} // esconde o botão de tema
+          //hideNotificationIcon={true}
+        >
+          <View style={styles.titleRow}>
+            <ThemedTitle title="Lista de amigos" ballColor="primary" />
+          </View>
+        </Header>
+
+        <View style={styles.descriptionContainer}>
+          <ThemedText style={styles.descriptionText} colorName="textSecondary">
+            Aqui ficam as pessoas que irão{" "}
+            <ThemedText
+              style={{ color: secondaryColor, fontWeight: "600" }}
+              colorName={"textPrimary"}
+            >
+              planejar e viajar
+            </ThemedText>{" "}
+            junto com você!
+          </ThemedText>
+        </View>
+
+        {/* --- LOADING STATE --- */}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={primaryColor} />
+            <ThemedText colorName="textSecondary" style={{ marginTop: 12 }}>
+              Carregando amigos...
+            </ThemedText>
+          </View>
+        ) : friends.length > 0 ? (
+          <FlatList
+            data={friends}
+            keyExtractor={(item) => item.id}
+            renderItem={renderFriendItem}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+          />
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.emptyStateContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                tintColor={primaryColor}
+                colors={[primaryColor]}
+              />
+            }
+          >
+            {/* Ícone SVG vindo do XML */}
+            <View style={{ marginBottom: 24 }}>
+              <SvgXml xml={NoFriendsSvg} width="120" height="120" />
+            </View>
+
+            <ThemedText style={styles.emptyTitle} colorName="textPrimary">
+              Opa! Não há amigos aqui!
+            </ThemedText>
+            <ThemedText style={styles.emptySubtitle} colorName="textSecondary">
+              Você ainda não adicionou nenhum amigo. Clique no botão para
+              convidar amigos para suas viagens!
+            </ThemedText>
+          </ScrollView>
+        )}
+
+        {/* BOTÃO FLUTUANTE DE ADICIONAR - Só mostra se não estiver carregando */}
+        {!isLoading && (
+          <View style={styles.footerContainer}>
+            <Pressable
+              style={[styles.addButton, { backgroundColor: bgBtnPlus }]}
+              onPress={() => router.push("/addFriend")}
+            >
+              <Ionicons name="person-add-outline" size={36} color={btnPlus} />
+            </Pressable>
+          </View>
+        )}
+
+        {/* --- MODAL DE EXCLUSÃO --- */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={!!friendToDelete}
+          onRequestClose={cancelDelete}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: btnNoColor }]}>
+                  Removendo amigo :(
+                </Text>
+                <Pressable
+                  onPress={cancelDelete}
+                  style={{ position: "absolute", right: 0, top: -5 }}
+                >
+                  <Ionicons name="close" size={20} color="#999" />
+                </Pressable>
+              </View>
+
+              <Text style={styles.modalBodyText}>
+                Você esta desfazendo uma amizade.{"\n"}
+                Gostaria mesmo de remover este amigo?
+              </Text>
+
+              <View style={styles.modalButtons}>
+                {/* Botão NÃO (Vermelho Escuro) */}
+                <Pressable
+                  style={[styles.modalBtn, { backgroundColor: btnNoColor }]}
+                  onPress={cancelDelete}
+                >
+                  <Text style={styles.modalBtnText}>Não.</Text>
+                </Pressable>
+
+                {/* Botão SIM (Laranja) */}
+                <Pressable
+                  style={[styles.modalBtn, { backgroundColor: btnYesColor }]}
+                  onPress={confirmDelete}
+                >
+                  <Text style={styles.modalBtnText}>Sim.</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </ThemedView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  pageTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  descriptionContainer: {
+    marginTop: 32,
+    marginBottom: 24,
+  },
+  descriptionText: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  listContent: {
+    paddingBottom: 160,
+  },
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2, // Borda laranja definida aqui
+  },
+  avatarPlaceholder: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  infoContainer: {
+    justifyContent: "center",
+  },
+  nameText: {
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  emailText: {
+    fontSize: 14,
+  },
+  footerContainer: {
+    position: "absolute",
+    bottom: 130,
+    right: 20,
+    zIndex: 10,
+  },
+  addButton: {
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+  },
+
+  // --- EMPTY STATE ---
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginTop: 90,
+    paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    maxWidth: "80%",
+  },
+
+  // --- MODAL STYLES ---
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "85%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalHeader: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    position: "relative",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalBodyText: {
+    fontSize: 14,
+    color: "#333", // Cor fixa cinza escuro para legibilidade no modal branco
+    textAlign: "center",
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 16,
+    width: "100%",
+    justifyContent: "center",
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalBtnText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+});

@@ -6,7 +6,6 @@ import { ThemedText } from "@/components/themed-text";
 import ThemedTitle from "@/components/themed-title";
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router, useRouter } from "expo-router";
@@ -16,9 +15,6 @@ import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
-  // Protege a rota verificando autenticação
-  const { isLoading } = useAuth();
-
   // IMPORTANTE: Todos os hooks devem ser chamados antes do return condicional
   const btnPlus = useThemeColor({}, "btnPlus");
   const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
@@ -32,11 +28,6 @@ export default function HomeScreen() {
   const handleNavigateToNotifications = () => {
     routerInstance.push("/notifications");
   };
-
-  // Enquanto carrega, não renderiza nada (DEPOIS de todos os hooks)
-  if (isLoading) {
-    return null;
-  }
 
   const user = {
     name: "Nicolas Yanase",

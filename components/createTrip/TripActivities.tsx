@@ -561,8 +561,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 87, 51, 0.1)",
   },
   activityDetails: {
-    flexDirection: "row",
-    gap: 16,
+    flexDirection: "column",
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,

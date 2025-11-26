@@ -7,14 +7,12 @@ import { ThemedView } from "@/components/themed-view";
 import { StatusBar } from "expo-status-bar";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
-
   const tabs = ["Dados pessoais", "Histórico de viagem", "Configurações"];
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const router = useRouter();
