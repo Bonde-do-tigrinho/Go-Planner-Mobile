@@ -1,11 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Modal,
   Pressable,
+  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -16,79 +21,33 @@ import { SvgXml } from "react-native-svg";
 
 import Header from "@/components/Header";
 import { ThemedText } from "@/components/themed-text";
+import ThemedTitle from "@/components/themed-title";
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import ThemedTitle from "@/components/themed-title";
 
 // --- XML DO SVG COPIADO DIRETAMENTE DO FIGMA ---
 const NoFriendsSvg = `<svg width="82" height="82" viewBox="0 0 82 82" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M27.25 23.85c0 3.61 1.44 7.08 3.99 9.63 2.56 2.56 6.03 3.99 9.64 3.99 3.61 0 7.08-1.43 9.64-3.99 2.55-2.55 3.99-6.02 3.99-9.63 0-3.62-1.44-7.08-3.99-9.64-2.56-2.55-6.03-3.99-9.64-3.99-3.61 0-7.08 1.44-9.64 3.99-2.55 2.56-3.99 6.02-3.99 9.64zM20.44 71.54v-6.81c0-3.62 1.44-7.08 3.99-9.64 2.56-2.55 6.02-3.99 9.64-3.99h11.92M74.95 74.95L57.91 57.91M57.91 74.95L74.95 57.91" stroke="#C70039" stroke-width="6.81" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://192.168.15.10:8082/api";
+
 // TIPO
 type Friend = {
   id: string;
-  name: string;
+  nome: string;
   email: string;
-  avatar: string | null;
+  foto?: string | null;
 };
 
-// DADOS INICIAIS (Para recarregar ao dar reload)
-const INITIAL_FRIENDS: Friend[] = [
-  {
-    id: "1",
-    name: "Raul Araujo",
-    email: "raul32@gmail.com",
-    avatar: null,
-  },
-  {
-    id: "2",
-    name: "Leandro Rodrigues",
-    email: "leandro23@gmail.com",
-    avatar: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    id: "3",
-    name: "Gabriel Kendi",
-    email: "gabrielk@gmail.com",
-    avatar: null,
-  },
-  {
-    id: "4",
-    name: "Miguel Lemos",
-    email: "lemos@gmail.com",
-    avatar: "https://i.pravatar.cc/150?img=13",
-  },
-  {
-    id: "5",
-    name: "Raul Araujo",
-    email: "raul32@gmail.com",
-    avatar: null,
-  },
-  {
-    id: "6",
-    name: "Leandro Rodrigues",
-    email: "leandro23@gmail.com",
-    avatar: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    id: "7",
-    name: "Gabriel Kendi",
-    email: "gabrielk@gmail.com",
-    avatar: null,
-  },
-  {
-    id: "8",
-    name: "Miguel Lemos",
-    email: "lemos@gmail.com",
-    avatar: "https://i.pravatar.cc/150?img=13",
-  },
-];
-
-export default function ExploreScreen() {
+export default function FriendsScreen() {
   const router = useRouter();
 
   // --- ESTADOS ---
-  const [friends, setFriends] = useState<Friend[]>(INITIAL_FRIENDS);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [friendToDelete, setFriendToDelete] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // --- HOOKS DE CORES ---
   const bgPrimary = useThemeColor({}, "bgPrimary");
@@ -100,7 +59,8 @@ export default function ExploreScreen() {
   const iconColor = useThemeColor({}, "icon");
   const primaryColor = useThemeColor({}, "primary");
   const secondaryColor = useThemeColor({}, "secondary");
-  const fabColor = "#FF0049";
+  const btnPlus = useThemeColor({}, "btnPlus");
+  const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
   const avatarPlaceholderBg = useThemeColor(
     { light: "#F4F4F5", dark: "#3F3F46" },
     "bgSecondary"
@@ -114,15 +74,117 @@ export default function ExploreScreen() {
     router.push("/notifications");
   };
 
+  // 🔹 Buscar dados do usuário e amigos ao montar o componente
+  useEffect(() => {
+    fetchUserAndFriends();
+  }, []);
+
+  const fetchUserAndFriends = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      const [token, userIdFromStorage] = await Promise.all([
+        AsyncStorage.getItem("userToken"),
+        AsyncStorage.getItem("userId"),
+      ]);
+
+      if (!token) {
+        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      if (!userIdFromStorage) {
+        Alert.alert(
+          "Erro",
+          "ID do usuário não encontrado. Faça login novamente."
+        );
+        return;
+      }
+
+      setUserId(userIdFromStorage);
+
+      // Busca os amigos usando o userId
+      const friendsResponse = await fetch(
+        `${API_URL}/friends/${userIdFromStorage}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (friendsResponse.ok) {
+        const friendsData = await friendsResponse.json();
+        console.log("Amigos carregados:", friendsData);
+        setFriends(friendsData);
+      } else {
+        const errorData = await friendsResponse.json();
+        console.error("Erro ao buscar amigos:", errorData);
+        Alert.alert("Erro", "Não foi possível carregar seus amigos.");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados:", error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    } finally {
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const onRefresh = () => {
+    fetchUserAndFriends(true);
+  };
+
   // Funções de Controle do Modal
   const promptDelete = (id: string) => setFriendToDelete(id);
 
-  const confirmDelete = () => {
-    if (friendToDelete) {
-      setFriends((current) =>
-        current.filter((friend) => friend.id !== friendToDelete)
-      );
-      setFriendToDelete(null);
+  const confirmDelete = async () => {
+    if (friendToDelete && userId) {
+      try {
+        const token = await AsyncStorage.getItem("userToken");
+
+        if (!token) {
+          Alert.alert("Erro", "Token não encontrado.");
+          return;
+        }
+
+        // Chamada DELETE para a API
+        const response = await fetch(`${API_URL}/friend/remove-friend`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            solicitanteId: userId,
+            solicitadoId: friendToDelete,
+          }),
+        });
+
+        if (response.ok) {
+          // Remove localmente após sucesso na API
+          setFriends((current) =>
+            current.filter((friend) => friend.id !== friendToDelete)
+          );
+          setFriendToDelete(null);
+          Alert.alert("Sucesso", "Amigo removido com sucesso!");
+        } else {
+          const errorData = await response.json();
+          console.error("Erro ao remover amigo:", errorData);
+          Alert.alert("Erro", "Não foi possível remover o amigo.");
+        }
+      } catch (error) {
+        console.error("Erro ao remover amigo:", error);
+        Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+      }
     }
   };
 
@@ -138,9 +200,9 @@ export default function ExploreScreen() {
       >
         <View style={styles.cardContent}>
           {/* Lógica do Avatar com Borda Laranja */}
-          {item.avatar ? (
+          {item.foto ? (
             <Image
-              source={{ uri: item.avatar }}
+              source={{ uri: item.foto }}
               style={[styles.avatar, { borderColor: primaryColor }]}
             />
           ) : (
@@ -165,7 +227,7 @@ export default function ExploreScreen() {
               colorName="textPrimary"
               style={styles.nameText}
             >
-              {item.name}
+              {item.nome}
             </ThemedText>
             <ThemedText colorName="textSecondary" style={styles.emailText}>
               {item.email}
@@ -190,10 +252,7 @@ export default function ExploreScreen() {
           //hideNotificationIcon={true}
         >
           <View style={styles.titleRow}>
-            <ThemedTitle
-              title="Lista de amigos"
-              ballColor="primary"
-            />
+            <ThemedTitle title="Lista de amigos" ballColor="primary" />
           </View>
         </Header>
 
@@ -210,17 +269,36 @@ export default function ExploreScreen() {
           </ThemedText>
         </View>
 
-        {/* --- LISTA OU EMPTY STATE --- */}
-        {friends.length > 0 ? (
+        {/* --- LOADING STATE --- */}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={primaryColor} />
+            <ThemedText colorName="textSecondary" style={{ marginTop: 12 }}>
+              Carregando amigos...
+            </ThemedText>
+          </View>
+        ) : friends.length > 0 ? (
           <FlatList
             data={friends}
             keyExtractor={(item) => item.id}
             renderItem={renderFriendItem}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
           />
         ) : (
-          <View style={styles.emptyStateContainer}>
+          <ScrollView
+            contentContainerStyle={styles.emptyStateContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                tintColor={primaryColor}
+                colors={[primaryColor]}
+              />
+            }
+          >
             {/* Ícone SVG vindo do XML */}
             <View style={{ marginBottom: 24 }}>
               <SvgXml xml={NoFriendsSvg} width="120" height="120" />
@@ -233,21 +311,20 @@ export default function ExploreScreen() {
               Você ainda não adicionou nenhum amigo. Clique no botão para
               convidar amigos para suas viagens!
             </ThemedText>
-          </View>
+          </ScrollView>
         )}
 
-        {/* BOTÃO FLUTUANTE DE ADICIONAR */}
-        <View style={styles.footerContainer}>
-          <Pressable
-            style={[
-              styles.addButton,
-              { borderColor: fabColor, backgroundColor: cardBg },
-            ]}
-            onPress={() => router.push("/addFriend")}
-          >
-            <Ionicons name="person-add-outline" size={36} color={fabColor} />
-          </Pressable>
-        </View>
+        {/* BOTÃO FLUTUANTE DE ADICIONAR - Só mostra se não estiver carregando */}
+        {!isLoading && (
+          <View style={styles.footerContainer}>
+            <Pressable
+              style={[styles.addButton, { backgroundColor: bgBtnPlus }]}
+              onPress={() => router.push("/addFriend")}
+            >
+              <Ionicons name="person-add-outline" size={36} color={btnPlus} />
+            </Pressable>
+          </View>
+        )}
 
         {/* --- MODAL DE EXCLUSÃO --- */}
         <Modal
@@ -367,22 +444,25 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     position: "absolute",
-    bottom: 100,
+    bottom: 130,
     right: 20,
     zIndex: 10,
   },
   addButton: {
-    width: 108,
-    height: 64,
-    borderRadius: 24,
-    borderWidth: 0.4,
-    justifyContent: "center",
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    display: "flex",
+    flexDirection: "row",
     alignItems: "center",
+    borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
   },
 
   // --- EMPTY STATE ---
@@ -392,6 +472,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 90,
     paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyTitle: {
     fontSize: 18,

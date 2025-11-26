@@ -78,11 +78,14 @@ export function useAuth() {
     }
   };
 
-  const signIn = async (token: string, email?: string) => {
+  const signIn = async (token: string, email?: string, id?: string) => {
     try {
       await AsyncStorage.setItem("userToken", token);
       if (email) {
         await AsyncStorage.setItem("userEmail", email);
+      }
+      if (id) {
+        await AsyncStorage.setItem("userId", id);
       }
       setAuthState((prev) => ({
         ...prev,
@@ -97,7 +100,7 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
-      await AsyncStorage.multiRemove(["userToken", "userEmail"]);
+      await AsyncStorage.multiRemove(["userToken", "userEmail", "userId"]);
       setAuthState((prev) => ({
         ...prev,
         userToken: null,

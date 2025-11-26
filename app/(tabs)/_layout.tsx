@@ -58,7 +58,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="friends"
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ionicons

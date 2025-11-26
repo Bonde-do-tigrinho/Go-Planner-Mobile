@@ -14,25 +14,29 @@ export default function Teste() {
     hasCompletedOnboarding: string | null;
     userToken: string | null;
     userEmail: string | null;
+    userId: string | null;
   }>({
     hasCompletedOnboarding: null,
     userToken: null,
     userEmail: null,
+    userId: null,
   });
 
   // Carrega os dados do AsyncStorage
   const loadStorageData = async () => {
     try {
-      const [onboarding, token, email] = await Promise.all([
+      const [onboarding, token, email, userId] = await Promise.all([
         AsyncStorage.getItem("hasCompletedOnboarding"),
         AsyncStorage.getItem("userToken"),
         AsyncStorage.getItem("userEmail"),
+        AsyncStorage.getItem("userId"),
       ]);
 
       setStorageData({
         hasCompletedOnboarding: onboarding,
         userToken: token,
         userEmail: email,
+        userId: userId,
       });
     } catch (error) {
       console.error("Erro ao carregar AsyncStorage:", error);
@@ -62,6 +66,7 @@ export default function Teste() {
         "hasCompletedOnboarding",
         "userToken",
         "userEmail",
+        "userId",
       ]);
       Alert.alert("Sucesso", "Todos os dados foram limpos!");
       await loadStorageData(); // Recarrega os dados
@@ -74,7 +79,7 @@ export default function Teste() {
 
   const handleClearToken = async () => {
     try {
-      await AsyncStorage.multiRemove(["userToken", "userEmail"]);
+      await AsyncStorage.multiRemove(["userToken", "userEmail", "userId"]);
       Alert.alert("Sucesso", "Token removido!");
       await loadStorageData(); // Recarrega os dados
       await refreshAuthState(); // Força o useAuth a verificar novamente
@@ -152,6 +157,15 @@ export default function Teste() {
             </ThemedText>
           </View>
 
+          <View style={styles.dataRow}>
+            <ThemedText colorName="textSecondary" isSemiBold>
+              userId:
+            </ThemedText>
+            <ThemedText colorName={storageData.userId ? "primary" : "error"}>
+              {storageData.userId || "null"}
+            </ThemedText>
+          </View>
+
           <View style={styles.refreshButton}>
             <Button
               title="🔄 Recarregar Dados"
@@ -160,8 +174,6 @@ export default function Teste() {
             />
           </View>
         </ThemedView>
-
-        <BtnThemeToggleButton />
 
         <View style={styles.buttonContainer}>
           <View style={styles.debugButton}>
