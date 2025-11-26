@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
-    maxHeight: SCREEN_HEIGHT * 0.9, // 85% da altura da tela
+    maxHeight: SCREEN_HEIGHT * 0.85, // 85% da altura da tela
   },
   modalTitle: {
     fontSize: 18,
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     width: "100%",
-    marginBottom: 30
+    maxHeight: SCREEN_HEIGHT * 0.65, // Limita altura do conteúdo
   },
 });
 

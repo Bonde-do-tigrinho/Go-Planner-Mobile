@@ -23,19 +23,16 @@ export function useAuth() {
     loadAuthState();
   }, []);
 
-  // Gerencia redirecionamentos baseado no estado de autenticação
+  // Gerencia redirecionamentos baseado APENAS no estado de autenticação
   useEffect(() => {
     if (authState.isLoading) return;
+
+    // Evita loops - só redireciona se ainda não redirecionou
+    if (hasCheckedRef.current) return;
 
     const inOnboarding = segments[0] === "(onboarding)";
     const inAuth = segments[0] === "(auth)";
     const inTabs = segments[0] === "(tabs)";
-
-    // Evita loops - só redireciona se ainda não redirecionou neste ciclo
-    if (hasCheckedRef.current) {
-      hasCheckedRef.current = false;
-      return;
-    }
 
     // Não completou onboarding
     if (!authState.hasCompletedOnboarding && !inOnboarding) {
@@ -57,7 +54,7 @@ export function useAuth() {
       router.replace("/(tabs)");
       return;
     }
-  }, [authState, segments]);
+  }, [authState]); // REMOVIDO segments - só monitora mudanças de authState
 
   const loadAuthState = async () => {
     try {
