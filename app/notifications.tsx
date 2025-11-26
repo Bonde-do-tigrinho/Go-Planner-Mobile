@@ -3,141 +3,381 @@ import NotificationItem from "@/components/notifications/item";
 import { ThemedText } from "@/components/themed-text";
 import ThemedTitle from "@/components/themed-title";
 import { ThemedView } from "@/components/themed-view";
-import { Ionicons } from "@expo/vector-icons"; // importacção dos ícones
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React from "react";
-import { SectionList, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  SectionList,
+  StyleSheet,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// --- 1. Definição dos tipos  ---
-type NotificationType = "trip_invite" | "friend_request" | "friend_accept" | "alert";
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://192.168.15.10:8082/api";
 
-// Estrutura de dados puros, ideal para o back-end
-type NotificationData = {
+// --- 1. Definição dos tipos baseados na API ---
+type NotificationType = "SOLICITACAO_AMIZADE" | "CONVITE_VIAGEM";
+
+type ApiNotification = {
   id: string;
-  type: NotificationType;
-  senderName: string | null; // pode ser nulo para alertas
-  tripName: string | null; // Apenas para o trip_invite
-  timestamp: string; // data e/ou hora
+  message?: string;
+  mensagem?: string;
+  destinatarioId: string;
+  referenciaId: string;
+  dataCriacao: string;
+  lida: boolean;
+  viagemId: string | null;
+  remetenteId: string;
+  tipo: NotificationType;
+  solicitanteId?: string;
+  solicitadoId?: string;
 };
 
-// --- 2. SEUS DADOS AGORA SEGUEM A NOVA ESTRUTURA ---
-// Essa array agora é limpa e sem lógica de exibição
-const RAW_NOTIFICATIONS_DATA: NotificationData[] = [
-  {
-    id: "1",
-    type: "trip_invite",
-    senderName: "Nicolas",
-    tripName: "XXXXXXXX",
-    timestamp: "11:00",
-  },
-  {
-    id: "2",
-    type: "friend_accept",
-    senderName: "Nicolas",
-    tripName: null,
-    timestamp: "11:00",
-  },
-  {
-    id: "3",
-    type: "trip_invite",
-    senderName: "Nicolas",
-    tripName: "XXXXXXXX",
-    timestamp: "11:00",
-  },
-  {
-    id: "4",
-    type: "friend_request",
-    senderName: "Nicolas",
-    tripName: null,
-    timestamp: "11:00",
-  },
-];
-
-// --- 3. AGRUPANDO OS DADOS PARA A SECTIONLIST ---
-// (No futuro, você pode fazer esse agrupamento com base nos timestamps)
-const NOTIFICATIONS_DATA = [
-  {
-    title: "Hoje",
-    data: [RAW_NOTIFICATIONS_DATA[0], RAW_NOTIFICATIONS_DATA[1]],
-  },
-  {
-    title: "Anteriores",
-    data: [RAW_NOTIFICATIONS_DATA[2], RAW_NOTIFICATIONS_DATA[3]],
-  },
-];
+type SectionData = {
+  title: string;
+  data: ApiNotification[];
+};
 
 export default function NotificationsScreen() {
   const router = useRouter();
+  const primaryColor = useThemeColor({}, "primary");
+  const primaryBackground = useThemeColor({}, "bgPrimary");
 
-  // --- 4. FUNÇÃO PARA GERAR OS PROPS DE EXIBIÇÃO ---
-  // Essa função "traduz" os dados puros em dados visuais
-  const getNotificationDetails = (item: NotificationData) => {
-    let icon: keyof typeof Ionicons.glyphMap = "alert-circle";
-    let text: string = "";
-    let showActions: boolean = false;
+  // --- Estados ---
+  const [notifications, setNotifications] = useState<ApiNotification[]>([]);
+  const [sections, setSections] = useState<SectionData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-    switch (item.type) {
-      case "trip_invite":
-        icon = "airplane";
-        text = `Você recebeu um convite de ${item.senderName} para uma viagem para ${item.tripName}`;
-        showActions = true;
-        break;
-      case "friend_request":
-        icon = "person-add";
-        text = `Você recebeu um pedido de amizade de ${item.senderName}`;
-        showActions = true;
-        break;
-      case "friend_accept":
-        icon = "person";
-        text = `Solicitação de amizade aceita. Agora você é amigo de ${item.senderName}`;
-        showActions = false;
-        break;
-      case "alert":
-        icon = "warning";
-        text = "Isto é um alerta geral do sistema."; // Exemplo de outro tipo
-        showActions = false;
-        break;
+  // --- Buscar notificações ao montar ---
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      const token = await AsyncStorage.getItem("userToken");
+
+      if (!token) {
+        Alert.alert("Erro", "Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      const response = await fetch(
+        `${API_URL}/notifications/minhasNotificacoes`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data: ApiNotification[] = await response.json();
+        console.log("Resposta completa da API:", JSON.stringify(data, null, 2));
+        console.log("Primeira notificação completa:", data[0]);
+        setNotifications(data);
+        groupNotifications(data);
+      } else {
+        const errorData = await response.json();
+        console.error("Erro ao buscar notificações:", errorData);
+        Alert.alert("Erro", "Não foi possível carregar as notificações.");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar notificações:", error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    } finally {
+      if (isRefresh) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
     }
-
-    return { icon, text, showActions };
   };
 
+  const onRefresh = () => {
+    fetchNotifications(true);
+  };
+
+  // --- Aceitar solicitação ---
+  const handleAccept = async (
+    notificationId: string,
+    solicitanteId: string,
+    solicitadoId: string
+  ) => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        Alert.alert("Erro", "Dados de autenticação não encontrados.");
+        return;
+      }
+
+      console.log("=== ACEITAR SOLICITAÇÃO ===");
+      console.log("NotificationId:", notificationId);
+      console.log("Payload:", JSON.stringify({ solicitanteId, solicitadoId }));
+
+      const response = await fetch(`${API_URL}/friend/accept-friend`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          solicitanteId,
+          solicitadoId,
+        }),
+      });
+
+      if (response.ok) {
+        // Remove a notificação da lista ANTES de mostrar o alert
+        const updatedNotifications = notifications.filter(
+          (n) => n.id !== notificationId
+        );
+        setNotifications(updatedNotifications);
+        groupNotifications(updatedNotifications);
+
+        Alert.alert("Sucesso", "Solicitação de amizade aceita!");
+      } else {
+        const errorData = await response.json();
+        console.error("Erro ao aceitar:", errorData);
+        Alert.alert(
+          "Erro",
+          errorData.error || "Não foi possível aceitar a solicitação."
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao aceitar solicitação:", error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    }
+  };
+
+  // --- Recusar solicitação ---
+  const handleDecline = async (
+    notificationId: string,
+    solicitanteId: string,
+    solicitadoId: string
+  ) => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        Alert.alert("Erro", "Dados de autenticação não encontrados.");
+        return;
+      }
+
+      console.log("=== RECUSAR SOLICITAÇÃO ===");
+      console.log("NotificationId:", notificationId);
+      console.log("Payload:", JSON.stringify({ solicitanteId, solicitadoId }));
+
+      const response = await fetch(`${API_URL}/friend/decline-friend`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          solicitanteId,
+          solicitadoId,
+        }),
+      });
+
+      if (response.ok) {
+        // Remove a notificação da lista ANTES de mostrar o alert
+        const updatedNotifications = notifications.filter(
+          (n) => n.id !== notificationId
+        );
+        setNotifications(updatedNotifications);
+        groupNotifications(updatedNotifications);
+
+        Alert.alert("Sucesso", "Solicitação de amizade recusada.");
+      } else {
+        const errorData = await response.json();
+        console.error("Erro ao recusar:", errorData);
+        Alert.alert(
+          "Erro",
+          errorData.error || "Não foi possível recusar a solicitação."
+        );
+      }
+    } catch (error) {
+      console.error("Erro ao recusar solicitação:", error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    }
+  };
+
+  // --- Agrupar notificações por data ---
+  const groupNotifications = (data: ApiNotification[]) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayNotifications: ApiNotification[] = [];
+    const olderNotifications: ApiNotification[] = [];
+
+    data.forEach((notification) => {
+      const notificationDate = new Date(notification.dataCriacao);
+      notificationDate.setHours(0, 0, 0, 0);
+
+      if (notificationDate.getTime() === today.getTime()) {
+        todayNotifications.push(notification);
+      } else {
+        olderNotifications.push(notification);
+      }
+    });
+
+    const grouped: SectionData[] = [];
+
+    if (todayNotifications.length > 0) {
+      grouped.push({ title: "Hoje", data: todayNotifications });
+    }
+
+    if (olderNotifications.length > 0) {
+      grouped.push({ title: "Anteriores", data: olderNotifications });
+    }
+
+    setSections(grouped);
+  };
+
+  // --- Formatar timestamp ---
+  const formatTimestamp = (dataHora: string): string => {
+    const date = new Date(dataHora);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  };
+
+  // --- Traduzir tipo da API para exibição ---
+  const getNotificationDetails = (item: ApiNotification) => {
+    let icon: keyof typeof Ionicons.glyphMap = "alert-circle";
+    let showActions: boolean = false;
+
+    switch (item.tipo) {
+      case "CONVITE_VIAGEM":
+        icon = "airplane";
+        showActions = true;
+        break;
+      case "SOLICITACAO_AMIZADE":
+        icon = "person-add";
+        showActions = true;
+        break;
+      default:
+        icon = "notifications";
+        showActions = false;
+    }
+
+    return { icon, showActions };
+  };
+
+  // --- Loading State ---
+  if (isLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: primaryBackground }}>
+        <ThemedView bgName="bgPrimary" style={styles.container}>
+          <Header onBackPress={() => router.back()} hideNotificationIcon={true}>
+            <ThemedTitle ballColor="secondary" title="Notificação" />
+          </Header>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={primaryColor} />
+            <ThemedText colorName="textSecondary" style={{ marginTop: 12 }}>
+              Carregando notificações...
+            </ThemedText>
+          </View>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: primaryBackground,
+        paddingVertical: 8,
+      }}
+    >
       <ThemedView bgName="bgPrimary" style={styles.container}>
-        <Header onBackPress={() => router.back()} hideNotificationIcon={true}>
+        <Header
+          onBackPress={() => router.back()}
+          hideNotificationIcon={true}
+          hideThemeToggle
+        >
           <ThemedTitle ballColor="secondary" title="Notificação" />
         </Header>
 
-        <SectionList
-          sections={NOTIFICATIONS_DATA}
-          keyExtractor={(item) => item.id}
-          // --- 5. RENDERITEM AGORA USA A LÓGICA DE TRADUÇÃO ---
-          renderItem={({ item }) => {
-            // "Traduz" os dados brutos para os props do componente
-            const { icon, text, showActions } = getNotificationDetails(item);
-
-            return (
-              <NotificationItem
-                icon={icon}
-                text={text}
-                time={item.timestamp} // O timestamp é pego diretamente
-                showActions={showActions}
-              />
-            );
-          }}
-          renderSectionHeader={({ section: { title } }) => (
-            <ThemedText
-              type="subtitle"
-              colorName="textPrimary"
-              style={styles.sectionHeader}
-            >
-              {title}
+        {sections.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="notifications-off-outline" size={64} color="#999" />
+            <ThemedText colorName="textSecondary" style={styles.emptyText}>
+              Nenhuma notificação ainda
             </ThemedText>
-          )}
-          contentContainerStyle={styles.listContainer}
-        />
+          </View>
+        ) : (
+          <SectionList
+            sections={sections}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => {
+              const { icon, showActions } = getNotificationDetails(item);
+
+              // Fallback para mensagem se vier undefined
+              const messageText =
+                item.message ||
+                item.mensagem ||
+                `Notificação do tipo ${item.tipo}`;
+
+              return (
+                <NotificationItem
+                  icon={icon}
+                  text={messageText}
+                  time={formatTimestamp(item.dataCriacao)}
+                  showActions={showActions}
+                  onAccept={() =>
+                    handleAccept(
+                      item.id,
+                      item.remetenteId || "",
+                      item.destinatarioId || ""
+                    )
+                  }
+                  onDecline={() =>
+                    handleDecline(
+                      item.id,
+                      item.remetenteId || "",
+                      item.destinatarioId || ""
+                    )
+                  }
+                />
+              );
+            }}
+            renderSectionHeader={({ section: { title } }) => (
+              <ThemedText
+                type="subtitle"
+                colorName="textPrimary"
+                style={styles.sectionHeader}
+              >
+                {title}
+              </ThemedText>
+            )}
+            contentContainerStyle={styles.listContainer}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                tintColor={primaryColor}
+                colors={[primaryColor]}
+              />
+            }
+          />
+        )}
       </ThemedView>
     </SafeAreaView>
   );
@@ -149,5 +389,21 @@ const styles = StyleSheet.create({
   sectionHeader: {
     paddingTop: 24,
     paddingBottom: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 16,
+    textAlign: "center",
   },
 });
