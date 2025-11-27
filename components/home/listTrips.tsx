@@ -1,38 +1,33 @@
-import React from 'react'
-import CardTrip from '../cardTrip';
-import { StyleSheet, View } from 'react-native';
-type Guest = {
-  id: number;
-  name: string;
-  avatar: string; // URL da imagem do avatar
-}
-type userTrips = {
-  id: number;
-  name: string;
-  local: string;
-  dateFrom: string;
-  dateTo: string;
-  image: number; // O resultado de require() no React Native é um número (asset reference)
-  guest?: Guest[]; // Um array de objetos do tipo Guest
-}
+import { CreateTripApiResponse } from "@/service/api/tripsApi";
+import React from "react";
+import { StyleSheet, View } from "react-native";
+import CardTrip from "../cardTrip";
+
 interface listTripsProps {
-  userTrips: userTrips[]
+  userTrips: CreateTripApiResponse[];
 }
-export default function ListTrips({userTrips} : listTripsProps ) {
+
+export default function ListTrips({ userTrips }: listTripsProps) {
   return (
     <View style={styles.container}>
-      {
-        userTrips.map(trip => (
-          <CardTrip key={trip.id} {...trip} />
-        ))
-      }
+      {userTrips.map((trip) => (
+        <CardTrip
+          key={trip.id}
+          id={trip.id}
+          name={trip.titulo}
+          local={trip.localDestino}
+          dateFrom={trip.dataPartida}
+          dateTo={trip.dataRetorno}
+          image={trip.imagem}
+          participants={trip.participantes}
+        />
+      ))}
     </View>
-  )
+  );
 }
 const styles = StyleSheet.create({
-  container:{
+  container: {
     display: "flex",
-    gap:12
+    gap: 12,
   },
- 
-})
+});

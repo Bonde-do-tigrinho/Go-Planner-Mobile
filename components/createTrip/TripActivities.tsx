@@ -1,9 +1,15 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Control, FieldErrors } from "react-hook-form";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { CreateTripFormData } from "../../app/createTrip";
 import GradientText from "../GradientText";
 import SheetModal from "../modal";
@@ -20,6 +26,11 @@ interface tripActivitiesProps {
   destination: string;
   startDate?: Date;
   endDate?: Date;
+
+  // Lista de atividades e função para deletar
+  activities: any[];
+  onDeleteActivity: (activityId: string) => void;
+  onToggleActivity: (activityId: string) => void;
 }
 
 export default function TripActivities({
@@ -28,6 +39,9 @@ export default function TripActivities({
   destination,
   endDate,
   startDate,
+  activities,
+  onDeleteActivity,
+  onToggleActivity,
 }: tripActivitiesProps) {
   const btnPlus = useThemeColor({}, "btnPlus");
   const bgBtnPlus = useThemeColor({}, "bgBtnPlus");
@@ -82,44 +96,26 @@ export default function TripActivities({
     }
   };
 
-  const activitiesList = [
-    {
-      id: "1",
-      desc: "Churrasco na praia",
-      horario: "12:00",
-      concluida: true,
-    },
-    {
-      id: "2",
-      desc: "Reunião de projeto",
-      horario: "09:00",
-      concluida: true,
-    },
-    {
-      id: "3",
-      desc: "Ir à academia",
-      horario: "18:00",
-      concluida: false,
-    },
-    {
-      id: "4",
-      desc: "Comprar leite",
-      horario: "17:30",
-      concluida: false,
-    },
-    {
-      id: "5",
-      desc: "Consulta no dentista",
-      horario: "14:00",
-      concluida: true,
-    },
-    {
-      id: "6",
-      desc: "Estudar para a prova",
-      horario: "20:00",
-      concluida: false,
-    },
-  ];
+  // Agrupa atividades por data
+  const groupActivitiesByDate = () => {
+    const grouped: { [key: string]: any[] } = {};
+
+    activities.forEach((activity) => {
+      const dateKey = new Date(activity.date).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+
+      grouped[dateKey].push(activity);
+    });
+
+    return grouped;
+  };
 
   return (
     <View style={styles.container}>
@@ -147,127 +143,112 @@ export default function TripActivities({
           </ThemedView>
         </Pressable>
         <View style={{ marginTop: 20 }}>
-          <ThemedText colorName="textPrimary" type="default" isSemiBold>
-            {" "}
-            Dia 20
-          </ThemedText>
-          <View style={styles.listCardActivities}>
-            {activitiesList.map((activity) => (
-              <ThemedView
-                key={activity.id}
-                style={styles.containerCard}
-                borderWidth={1}
-                borderName="borderPrimary"
+          {activities.length === 0 ? (
+            <ThemedView style={styles.emptyState} bgName="bgSecondary">
+              <Ionicons name="calendar-outline" size={48} color={iconColor} />
+              <ThemedText
+                colorName="textSecondary"
+                type="sm"
+                style={{ textAlign: "center", marginTop: 12 }}
               >
-                <View
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 8,
-                    alignItems: "center",
-                  }}
-                >
-                  {activity.concluida === true ? (
-                    <ThemedView
-                      bgName="primary"
-                      style={[styles.check, { padding: 2 }]}
-                    >
-                      <Ionicons name="checkmark" size={18} color="white" />
-                    </ThemedView>
-                  ) : (
-                    <ThemedView
-                      borderName="primary"
-                      borderWidth={0.5}
-                      style={[styles.notCheck, { padding: 2 }]}
-                    ></ThemedView>
-                  )}
-                  <ThemedText type="sm" colorName="textSecondary">
-                    {activity.desc}
+                Nenhuma atividade adicionada ainda.{"\n"}
+                Clique no botão "Nova atividade" para começar!
+              </ThemedText>
+            </ThemedView>
+          ) : (
+            Object.entries(groupActivitiesByDate()).map(
+              ([date, dayActivities]: [string, any[]]) => (
+                <View key={date} style={{ marginBottom: 20 }}>
+                  <ThemedText colorName="textPrimary" type="default" isSemiBold>
+                    {date}
                   </ThemedText>
-                </View>
+                  <View style={styles.listCardActivities}>
+                    {dayActivities.map((activity) => (
+                      <ThemedView
+                        key={activity.id}
+                        style={styles.containerCard}
+                        borderWidth={1}
+                        borderName="borderPrimary"
+                      >
+                        <View
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            gap: 8,
+                            alignItems: "center",
+                            flex: 1,
+                          }}
+                        >
+                          <TouchableOpacity
+                            onPress={() => onToggleActivity(activity.id)}
+                            style={{ padding: 2 }}
+                          >
+                            {activity.is_completed ? (
+                              <ThemedView bgName="primary" style={styles.check}>
+                                <Ionicons
+                                  name="checkmark"
+                                  size={16}
+                                  color="white"
+                                />
+                              </ThemedView>
+                            ) : (
+                              <ThemedView
+                                borderName="primary"
+                                borderWidth={1}
+                                style={styles.notCheck}
+                              />
+                            )}
+                          </TouchableOpacity>
+                          <ThemedText
+                            type="sm"
+                            colorName="textSecondary"
+                            style={[
+                              { flex: 1 },
+                              activity.is_completed && styles.completedText,
+                            ]}
+                          >
+                            {activity.title}
+                          </ThemedText>
+                        </View>
 
-                <View
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 10,
-                    alignItems: "center",
-                  }}
-                >
-                  <ThemedText type="px" colorName="textSecondary">
-                    {activity.horario}
-                  </ThemedText>
-                  <ThemedView
-                    bgName="bgTerciary"
-                    style={{ height: 22, width: 2, borderRadius: 4 }}
-                  />
-                  <Ionicons name="trash" size={20} color={iconColor} />
+                        <View
+                          style={{
+                            display: "flex",
+                            flexDirection: "row",
+                            gap: 10,
+                            alignItems: "center",
+                          }}
+                        >
+                          <ThemedText type="px" colorName="textSecondary">
+                            {new Date(activity.time).toLocaleTimeString(
+                              "pt-BR",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </ThemedText>
+                          <ThemedView
+                            bgName="bgTerciary"
+                            style={{ height: 22, width: 2, borderRadius: 4 }}
+                          />
+                          <TouchableOpacity
+                            onPress={() => onDeleteActivity(activity.id)}
+                          >
+                            <Ionicons
+                              name="trash"
+                              size={20}
+                              color={iconColor}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </ThemedView>
+                    ))}
+                  </View>
                 </View>
-              </ThemedView>
-            ))}
-          </View>
-        </View>
-
-        <View style={{ marginTop: 20 }}>
-          <ThemedText colorName="textPrimary" type="default" isSemiBold>
-            {" "}
-            Dia 21
-          </ThemedText>
-          <View style={styles.listCardActivities}>
-            {activitiesList.map((activity) => (
-              <ThemedView
-                key={activity.id}
-                style={styles.containerCard}
-                borderWidth={1}
-                borderName="borderPrimary"
-              >
-                <View
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 8,
-                    alignItems: "center",
-                  }}
-                >
-                  {activity.concluida === true ? (
-                    <ThemedView
-                      bgName="primary"
-                      style={[styles.check, { padding: 2 }]}
-                    >
-                      <Ionicons name="checkmark" size={18} color="white" />
-                    </ThemedView>
-                  ) : (
-                    <ThemedView
-                      borderName="primary"
-                      borderWidth={0.5}
-                      style={[styles.notCheck, { padding: 2 }]}
-                    ></ThemedView>
-                  )}
-                  <ThemedText type="sm" colorName="textSecondary">
-                    {activity.desc}
-                  </ThemedText>
-                </View>
-
-                <View
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 10,
-                    alignItems: "center",
-                  }}
-                >
-                  <ThemedText type="px" colorName="textSecondary">
-                    {activity.horario}
-                  </ThemedText>
-                  <ThemedView
-                    bgName="bgTerciary"
-                    style={{ height: 22, width: 2, borderRadius: 4 }}
-                  />
-                  <Ionicons name="trash" size={20} color={iconColor} />
-                </View>
-              </ThemedView>
-            ))}
-          </View>
+              )
+            )
+          )}
         </View>
       </ScrollView>
       <SheetModal
@@ -282,10 +263,19 @@ export default function TripActivities({
           <GradientText style={styles.gradientName}>
             Olá, Nicolas Yanase
           </GradientText>
-          <ThemedText style={{marginTop: 10}} type="default" isSemiBold colorName="textPrimary">
+          <ThemedText
+            style={{ marginTop: 10 }}
+            type="default"
+            isSemiBold
+            colorName="textPrimary"
+          >
             Como posso ajudar?
           </ThemedText>
-          <ThemedText style={{marginBottom: 10}} type="sm" colorName="textSecondary">
+          <ThemedText
+            style={{ marginBottom: 10 }}
+            type="sm"
+            colorName="textSecondary"
+          >
             Selecione alguma opção para nossa inteligência artificial
           </ThemedText>
 
@@ -584,5 +574,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+  },
+  emptyState: {
+    padding: 32,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  completedText: {
+    textDecorationLine: "line-through",
+    opacity: 0.6,
   },
 });
