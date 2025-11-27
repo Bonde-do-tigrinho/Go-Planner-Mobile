@@ -16,7 +16,8 @@ import { ThemedView } from "../themed-view";
 import { ThemedInput } from "@/components/themed-input";
 import EditProfileForm from "./editProfileForm";
 
-const API_URL = "http://192.168.15.10:8082/api";
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://192.168.15.10:8082/api";
 
 export default function Info() {
   const [isModalVisible, setModalVisible] = useState(false);

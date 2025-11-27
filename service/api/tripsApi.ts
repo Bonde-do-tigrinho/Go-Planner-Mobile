@@ -1,113 +1,259 @@
-import { storage, STORAGE_KEYS } from '../storage/asyncStorage';
-import { Trip, CreateTripDTO, UpdateTripDTO } from '@/types/trip.types';
-import { getAllActivities } from './activitiesApi';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const SIMULATE_NETWORK_DELAY = true;
-const DELAY_MS = 800;
+const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://192.168.15.10:8082/api";
 
-const delay = () => 
-  SIMULATE_NETWORK_DELAY 
-    ? new Promise(resolve => setTimeout(resolve, DELAY_MS))
-    : Promise.resolve();
-
-async function getAllTrips(): Promise<Trip[]> {
-  const trips = await storage.get<Trip[]>(STORAGE_KEYS.TRIPS);
-  return trips || [];
-}
-
-async function saveTrips(trips: Trip[]): Promise<void> {
-  await storage.set(STORAGE_KEYS.TRIPS, trips);
-}
-
-function generateId(): string {
-  return `trip_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-export const tripsApi = {
-  /**
-   * GET /api/trips
-   */
-  async findAll(): Promise<Trip[]> {
-    await delay();
-    return await getAllTrips();
-  },
-
-  /**
-   * GET /api/trips/:id
-   */
-  async findById(id: string): Promise<Trip | null> {
-    await delay();
-    
-    const all = await getAllTrips();
-    return all.find(t => t.id === id) || null;
-  },
-
-  /**
-   * POST /api/trips
-   */
-  async create(dto: CreateTripDTO): Promise<Trip> {
-    await delay();
-    
-    const all = await getAllTrips();
-    const allTrips = await getAllActivities()
-    const newTrip: Trip = {
-      ...dto,
-      id: generateId(),
-      activities: allTrips,
-      guests: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    all.push(newTrip);
-    await saveTrips(all);
-    
-    console.log('✅ Viagem criada:', newTrip.id);
-    return newTrip;
-  },
-
-  /**
-   * PUT /api/trips/:id
-   */
-  async update(id: string, dto: UpdateTripDTO): Promise<Trip> {
-    await delay();
-    
-    const all = await getAllTrips();
-    const index = all.findIndex(t => t.id === id);
-    
-    if (index === -1) {
-      throw new Error(`Viagem ${id} não encontrada`);
-    }
-    
-    all[index] = {
-      ...all[index],
-      ...dto,
-      updatedAt: new Date().toISOString(),
-    };
-    
-    await saveTrips(all);
-    
-    console.log('✅ Viagem atualizada:', id);
-    return all[index];
-  },
-
-  /**
-   * DELETE /api/trips/:id
-   */
-  async delete(id: string): Promise<void> {
-    await delay();
-    
-    const all = await getAllTrips();
-    const filtered = all.filter(t => t.id !== id);
-    
-    await saveTrips(filtered);
-    
-    console.log('✅ Viagem deletada:', id);
-  },
-
-  // DEV UTILS
-  async clearAll(): Promise<void> {
-    await storage.remove(STORAGE_KEYS.TRIPS);
-    console.log('🧹 Todas as viagens foram limpas');
-  },
+// ===== TIPOS DA API (Backend em Português) =====
+export type CreateTripApiRequest = {
+  titulo: string;
+  localPartida: string;
+  localDestino: string;
+  dataPartida: string; // ISO 8601
+  dataRetorno: string; // ISO 8601
+  descricao?: string;
+  imagem?: string;
+  atividades: Array<{
+    titulo: string;
+    dataHora: string; // ISO 8601
+  }>;
+  participantes: string[]; // Array de emails
 };
+
+export type UpdateTripApiRequest = {
+  titulo: string;
+  localPartida: string;
+  localDestino: string;
+  dataPartida: string; // ISO 8601
+  dataRetorno: string; // ISO 8601
+  descricao?: string;
+};
+
+export type ActivityApiResponse = {
+  id: string;
+  titulo: string;
+  dataHora: string;
+  concluida: boolean;
+};
+
+export type ParticipantApiResponse = {
+  userId: string;
+  role: "LEITOR" | "EDITOR";
+};
+
+export type UserInfo = {
+  id: string;
+  nome: string;
+  email: string;
+  foto?: string | null;
+};
+
+export type CreateTripApiResponse = {
+  id: string;
+  titulo: string;
+  localPartida: string;
+  localDestino: string;
+  dataPartida: string;
+  dataRetorno: string;
+  descricao: string;
+  imagem: string;
+  favoritada: boolean;
+  atividades: ActivityApiResponse[];
+  participantes: ParticipantApiResponse[];
+};
+
+// ===== FUNÇÕES DA API =====
+
+/**
+ * POST /api/trips/create-trip
+ * Cria uma nova viagem
+ */
+export async function createTrip(
+  tripData: CreateTripApiRequest
+): Promise<CreateTripApiResponse> {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
+
+    console.log(
+      "📤 Enviando viagem para API:",
+      JSON.stringify(tripData, null, 2)
+    );
+
+    const response = await fetch(`${API_URL}/trips/create-trip`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(tripData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("❌ Erro da API:", errorData);
+      throw new Error(
+        errorData.message || errorData.error || "Erro ao criar viagem"
+      );
+    }
+
+    const data: CreateTripApiResponse = await response.json();
+    console.log("✅ Viagem criada com sucesso:", data.id);
+    return data;
+  } catch (error) {
+    console.error("❌ Erro ao criar viagem:", error);
+    throw error;
+  }
+}
+
+/**
+ * GET /api/trips/minhas-viagens
+ * Busca todas as viagens criadas pelo usuário
+ */
+export async function getMyTrips(): Promise<CreateTripApiResponse[]> {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
+
+    const response = await fetch(`${API_URL}/trips/minhas-viagens`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || errorData.error || "Erro ao buscar viagens"
+      );
+    }
+
+    const data: CreateTripApiResponse[] = await response.json();
+    console.log("✅ Viagens carregadas:", data.length);
+    return data;
+  } catch (error) {
+    console.error("❌ Erro ao buscar viagens:", error);
+    throw error;
+  }
+}
+
+/**
+ * PATCH /api/trips/{id}
+ * Atualiza os dados de uma viagem existente
+ */
+export async function updateTrip(
+  tripId: string,
+  tripData: UpdateTripApiRequest
+): Promise<CreateTripApiResponse> {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
+
+    console.log(
+      "📤 Atualizando viagem:",
+      tripId,
+      JSON.stringify(tripData, null, 2)
+    );
+
+    const response = await fetch(`${API_URL}/trips/${tripId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(tripData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("❌ Erro da API:", errorData);
+      throw new Error(
+        errorData.message || errorData.error || "Erro ao atualizar viagem"
+      );
+    }
+
+    const data: CreateTripApiResponse = await response.json();
+    console.log("✅ Viagem atualizada com sucesso:", data.id);
+    return data;
+  } catch (error) {
+    console.error("❌ Erro ao atualizar viagem:", error);
+    throw error;
+  }
+}
+
+/**
+ * GET /api/trips
+ * Busca todas as viagens do usuário
+ */
+export async function getUserTrips(): Promise<CreateTripApiResponse[]> {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
+
+    const response = await fetch(`${API_URL}/trips`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || errorData.error || "Erro ao buscar viagens"
+      );
+    }
+
+    const data: CreateTripApiResponse[] = await response.json();
+    return data;
+  } catch (error) {
+    console.error("❌ Erro ao buscar viagens:", error);
+    throw error;
+  }
+}
+
+/**
+ * GET /api/users/{userId}
+ * Busca informações de um usuário pelo ID
+ */
+export async function getUserById(userId: string): Promise<UserInfo> {
+  try {
+    const token = await AsyncStorage.getItem("userToken");
+
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
+
+    const response = await fetch(`${API_URL}/users/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Erro ao buscar informações do usuário");
+    }
+
+    const data: UserInfo = await response.json();
+    return data;
+  } catch (error) {
+    console.error("❌ Erro ao buscar usuário:", error);
+    throw error;
+  }
+}

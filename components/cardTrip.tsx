@@ -1,118 +1,148 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { ParticipantApiResponse } from "@/service/api/tripsApi";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
+import React from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "./themed-text";
 import { ThemedView } from "./themed-view";
-import React from "react";
-type Guest = {
-  id: number;
-  name: string;
-  avatar: string;
-};
 
 interface cardTripsProps {
-  id: number;
+  id: string;
   name: string;
   local: string;
   dateFrom: string;
   dateTo: string;
-  image: any;
-  guest?: Guest[];
+  image: string;
+  participants?: ParticipantApiResponse[];
 }
 
 export default function CardTrip({ ...trip }: cardTripsProps) {
   const iconColor = useThemeColor({}, "secondary");
-  const guestCount = trip.guest?.length || 0;
+  const participantCount = trip.participants?.length || 0;
+  const router = useRouter();
+
+  // Formata as datas ISO para DD/MM/YYYY
+  const formatDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+  };
+
+  // Placeholder image se não houver imagem
+  const tripImageSource = trip.image
+    ? { uri: trip.image }
+    : require("../assets/images/popularTrips/tokyo.png");
+
+  const handleCardPress = () => {
+    router.push({
+      pathname: "/createTrip",
+      params: { tripId: trip.id },
+    });
+  };
+
   return (
-    <ThemedView
-      key={trip.id}
-      bgName="bgPrimary"
-      darkBg="#222"
-      style={styles.container}
-    >
-      <View style={styles.containerInfo}>
-        <ThemedText colorName="textSecondary" style={{}} type="sm">
-          {trip.name}
-        </ThemedText>
+    <TouchableOpacity onPress={handleCardPress} activeOpacity={0.7}>
+      <ThemedView
+        key={trip.id}
+        bgName="bgPrimary"
+        darkBg="#222"
+        style={styles.container}
+      >
+        <View style={styles.containerInfo}>
+          <ThemedText colorName="textSecondary" style={{}} type="sm">
+            {trip.name}
+          </ThemedText>
 
-        <View style={styles.localDateContainer}>
-          <View style={{ display: "flex", flexDirection: "row" }}>
-            <Ionicons
-              name="pin"
-              size={20}
-              color={iconColor}
-              style={{ paddingRight: 4 }}
-            />
-            <ThemedText colorName="textPrimary" type="px" isSemiBold={true}>
-              {trip.local}
-            </ThemedText>
+          <View style={styles.localDateContainer}>
+            <View style={{ display: "flex", flexDirection: "row" }}>
+              <Ionicons
+                name="pin"
+                size={20}
+                color={iconColor}
+                style={{ paddingRight: 4 }}
+              />
+              <ThemedText colorName="textPrimary" type="px" isSemiBold={true}>
+                {trip.local}
+              </ThemedText>
+            </View>
+
+            <View style={{ display: "flex", flexDirection: "row" }}>
+              <Ionicons
+                name="calendar"
+                size={20}
+                color={iconColor}
+                style={{ paddingRight: 4 }}
+              />
+              <ThemedText colorName="textPrimary" type="px" isSemiBold={true}>
+                {formatDate(trip.dateFrom)} - {formatDate(trip.dateTo)}
+              </ThemedText>
+            </View>
           </View>
 
-          <View style={{ display: "flex", flexDirection: "row" }}>
-            <Ionicons
-              name="calendar"
-              size={20}
-              color={iconColor}
-              style={{ paddingRight: 4 }}
-            />
-            <ThemedText colorName="textPrimary" type="px" isSemiBold={true}>
-              {trip.dateFrom} - {trip.dateTo}
-            </ThemedText>
-          </View>
-        </View>
-
-        <View style={styles.guestContainer}>
-          {guestCount === 0 ? (
-            <ThemedText
-              type="px"
-              colorName="textTerciary"
-              style={{ paddingRight: 4 }}
-            >
-              Não há convidados
-            </ThemedText>
-          ) : (
-            <>
+          <View style={styles.guestContainer}>
+            {participantCount === 0 ? (
               <ThemedText
                 type="px"
                 colorName="textTerciary"
                 style={{ paddingRight: 4 }}
               >
-                Convidados:
+                Sem participantes
               </ThemedText>
-
-              {/* 1. Mapeia e mostra APENAS os 4 primeiros convidados */}
-              {trip.guest?.slice(0, 3).map((guest) => (
-                <Image
-                  key={guest.id}
-                  style={styles.guestImage}
-                  source={{ uri: guest.avatar }}
-                />
-              ))}
-
-              {/* 2. Se houver mais de 4, mostra o círculo com o número restante */}
-              {guestCount > 4 && (
-                <ThemedView
-                  bgName="bgSecondary"
-                  style={styles.moreGuestsCircle}
-                  lightBg="#ddd"
+            ) : (
+              <>
+                <ThemedText
+                  type="px"
+                  colorName="textTerciary"
+                  style={{ paddingRight: 4 }}
                 >
-                  <ThemedText
-                    colorName="textPrimary"
-                    darkColor="#E4E4E7"
-                    style={styles.moreGuestsText}
-                  >
-                    {`+${guestCount - 4}`}
-                  </ThemedText>
-                </ThemedView>
-              )}
-            </>
-          )}
-        </View>
-      </View>
+                  Participantes: {participantCount}
+                </ThemedText>
 
-      <Image key={trip.id} style={styles.tripImage} source={trip.image} />
-    </ThemedView>
+                {/* Mostra até 3 ícones de participantes */}
+                {trip.participants?.slice(0, 3).map((participant, index) => (
+                  <ThemedView
+                    key={`${participant.userId}-${index}`}
+                    bgName="bgSecondary"
+                    style={styles.participantCircle}
+                    lightBg="#E4E4E7"
+                    darkBg="#3F3F46"
+                  >
+                    <Ionicons name="person" size={14} color={iconColor} />
+                  </ThemedView>
+                ))}
+
+                {/* Se houver mais de 3, mostra o número restante */}
+                {participantCount > 3 && (
+                  <ThemedView
+                    bgName="bgSecondary"
+                    style={styles.moreGuestsCircle}
+                    lightBg="#ddd"
+                  >
+                    <ThemedText
+                      colorName="textPrimary"
+                      darkColor="#E4E4E7"
+                      style={styles.moreGuestsText}
+                    >
+                      {`+${participantCount - 3}`}
+                    </ThemedText>
+                  </ThemedView>
+                )}
+              </>
+            )}
+          </View>
+        </View>
+
+        <Image
+          key={trip.id}
+          style={styles.tripImage}
+          source={tripImageSource}
+        />
+      </ThemedView>
+    </TouchableOpacity>
   );
 }
 
@@ -148,6 +178,13 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     gap: 4,
+    alignItems: "center",
+  },
+  participantCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
     alignItems: "center",
   },
   guestImage: {
