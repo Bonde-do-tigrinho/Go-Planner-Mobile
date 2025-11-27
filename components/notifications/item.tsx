@@ -1,15 +1,17 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { Ionicons } from "@expo/vector-icons";
+import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "../themed-text";
 import { ThemedView } from "../themed-view";
-import { useThemeColor } from "@/hooks/use-theme-color";
-import React from "react";
 
 type NotificationItemProps = {
   icon: keyof typeof Ionicons.glyphMap;
   text: string;
   time: string;
   showActions?: boolean;
+  onAccept?: () => void;
+  onDecline?: () => void;
 };
 
 export default function NotificationItem({
@@ -17,15 +19,19 @@ export default function NotificationItem({
   text,
   time,
   showActions = false,
+  onAccept,
+  onDecline,
 }: NotificationItemProps) {
   // Pega as cores do tema (constants/theme.ts)
   const iconColor = useThemeColor({}, "primary");
+
+  console.log("NotificationItem recebeu:", { text, time, showActions, icon });
 
   return (
     <ThemedView bgName="bgPrimary" style={styles.container}>
       {/* usando bgSecondary para o ícone, como no design */}
       <ThemedView bgName="primary" style={styles.iconContainer}>
-        <Ionicons name={icon} size={24} color= "white" />
+        <Ionicons name={icon} size={24} color="white" />
       </ThemedView>
       <View style={styles.contentContainer}>
         <View style={styles.textRow}>
@@ -43,7 +49,7 @@ export default function NotificationItem({
         {showActions && (
           <View style={styles.actionsRow}>
             {/* Botão Aceitar */}
-            <TouchableOpacity>
+            <TouchableOpacity onPress={onAccept}>
               <ThemedView bgName="btnAccept" style={styles.button}>
                 <ThemedText colorName="primary" isSemiBold>
                   Aceitar
@@ -51,7 +57,7 @@ export default function NotificationItem({
               </ThemedView>
             </TouchableOpacity>
             {/* Botão Recusar (usando bgTertiary) */}
-            <TouchableOpacity>
+            <TouchableOpacity onPress={onDecline}>
               <ThemedView bgName="btnDecline" style={styles.button}>
                 <ThemedText colorName="secondary" isSemiBold>
                   Recusar
@@ -73,7 +79,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     width: 40,
-    height:40,
+    height: 40,
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
