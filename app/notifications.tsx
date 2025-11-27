@@ -37,6 +37,7 @@ type ApiNotification = {
   tipo: NotificationType;
   solicitanteId?: string;
   solicitadoId?: string;
+  status?: "pending" | "accepted" | "declined";
 };
 
 type SectionData = {
@@ -113,6 +114,44 @@ export default function NotificationsScreen() {
     fetchNotifications(true);
   };
 
+  // --- Deletar notificação ---
+  const handleDeleteNotification = async (notificationId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        Alert.alert("Erro", "Dados de autenticação não encontrados.");
+        return;
+      }
+
+      const response = await fetch(
+        `${API_URL}/notifications/${notificationId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        // Remove a notificação da lista localmente
+        const updatedNotifications = notifications.filter(
+          (n) => n.id !== notificationId
+        );
+        setNotifications(updatedNotifications);
+        groupNotifications(updatedNotifications);
+      } else {
+        const errorData = await response.json();
+        console.error("Erro ao deletar:", errorData);
+        Alert.alert("Erro", "Não foi possível deletar a notificação.");
+      }
+    } catch (error) {
+      console.error("Erro ao deletar notificação:", error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor.");
+    }
+  };
+
   // --- Aceitar solicitação ---
   const handleAccept = async (
     notificationId: string,
@@ -143,7 +182,7 @@ export default function NotificationsScreen() {
       });
 
       if (response.ok) {
-        // Remove a notificação da lista ANTES de mostrar o alert
+        // Remove a notificação da lista
         const updatedNotifications = notifications.filter(
           (n) => n.id !== notificationId
         );
@@ -195,7 +234,7 @@ export default function NotificationsScreen() {
       });
 
       if (response.ok) {
-        // Remove a notificação da lista ANTES de mostrar o alert
+        // Remove a notificação da lista
         const updatedNotifications = notifications.filter(
           (n) => n.id !== notificationId
         );
