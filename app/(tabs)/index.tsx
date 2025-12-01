@@ -43,7 +43,11 @@ export default function HomeScreen() {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [myTrips, setMyTrips] = useState<CreateTripApiResponse[]>([]);
+  const [participatingTrips, setParticipatingTrips] = useState<
+    CreateTripApiResponse[]
+  >([]);
   const [isLoadingTrips, setIsLoadingTrips] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
   useEffect(() => {
     fetchUserData();
@@ -55,12 +59,48 @@ export default function HomeScreen() {
       if (!isRefresh) {
         setIsLoadingTrips(true);
       }
-      const trips = await getMyTrips();
+
+      const [token, userId] = await Promise.all([
+        AsyncStorage.getItem("userToken"),
+        AsyncStorage.getItem("userId"),
+      ]);
+
+      if (!token || !userId) {
+        console.log("Token ou userId não encontrado");
+        setMyTrips([]);
+        setParticipatingTrips([]);
+        return;
+      }
+
+      setCurrentUserId(userId);
+
+      // Busca viagens criadas pelo usuário
+      const createdTrips = await getMyTrips();
+
+      // Busca viagens em que o usuário participa
+      const participatingResponse = await fetch(
+        `${API_URL}/trips/participando`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      let participatingTripsData: CreateTripApiResponse[] = [];
+      if (participatingResponse.ok) {
+        participatingTripsData = await participatingResponse.json();
+      }
+
       // Inverte a ordem para mostrar as mais recentes primeiro
-      setMyTrips(trips.reverse());
+      setMyTrips(createdTrips.reverse());
+      setParticipatingTrips(participatingTripsData.reverse());
     } catch (error) {
       console.error("Erro ao carregar viagens:", error);
       setMyTrips([]);
+      setParticipatingTrips([]);
     } finally {
       if (!isRefresh) {
         setIsLoadingTrips(false);
@@ -166,38 +206,67 @@ export default function HomeScreen() {
       );
     }
 
-    if (myTrips.length === 0) {
-      return (
-        <View style={{ padding: 40, alignItems: "center" }}>
-          <Ionicons name="airplane-outline" size={48} color={btnPlus} />
-          <ThemedText
-            colorName="textSecondary"
-            style={{ marginTop: 12, textAlign: "center" }}
-          >
-            Você ainda não criou nenhuma viagem.{"\n"}
-            Clique no botão "Nova viagem" para começar!
-          </ThemedText>
-        </View>
-      );
-    }
-
     switch (activeTab) {
       case "Todas":
-        return <ListTrips userTrips={myTrips} />;
-      case "Suas viagens":
-        return <ListTrips userTrips={myTrips} />;
-      case "Compartilhadas":
-        return (
-          <View style={{ padding: 40, alignItems: "center" }}>
-            <ThemedText
-              colorName="textSecondary"
-              style={{ textAlign: "center" }}
-            >
-              Em breve você verá aqui as viagens{"\n"}
-              compartilhadas com você
-            </ThemedText>
-          </View>
+        // Combina viagens criadas + viagens participando (sem duplicatas)
+        const allTripsIds = new Set(myTrips.map((t) => t.id));
+        const uniqueParticipatingTrips = participatingTrips.filter(
+          (t) => !allTripsIds.has(t.id)
         );
+        const allTrips = [...myTrips, ...uniqueParticipatingTrips];
+
+        if (allTrips.length === 0) {
+          return (
+            <View style={{ padding: 40, alignItems: "center" }}>
+              <Ionicons name="airplane-outline" size={48} color={btnPlus} />
+              <ThemedText
+                colorName="textSecondary"
+                style={{ marginTop: 12, textAlign: "center" }}
+              >
+                Você ainda não tem viagens.{"\n"}
+                Clique no botão "Nova viagem" para começar!
+              </ThemedText>
+            </View>
+          );
+        }
+        return <ListTrips userTrips={allTrips} />;
+
+      case "Suas viagens":
+        // Apenas viagens criadas pelo usuário
+        if (myTrips.length === 0) {
+          return (
+            <View style={{ padding: 40, alignItems: "center" }}>
+              <Ionicons name="airplane-outline" size={48} color={btnPlus} />
+              <ThemedText
+                colorName="textSecondary"
+                style={{ marginTop: 12, textAlign: "center" }}
+              >
+                Você ainda não criou nenhuma viagem.{"\n"}
+                Clique no botão "Nova viagem" para começar!
+              </ThemedText>
+            </View>
+          );
+        }
+        return <ListTrips userTrips={myTrips} />;
+
+      case "Compartilhadas":
+        // Apenas viagens compartilhadas (que o usuário participa mas não criou)
+        if (participatingTrips.length === 0) {
+          return (
+            <View style={{ padding: 40, alignItems: "center" }}>
+              <Ionicons name="people-outline" size={48} color={btnPlus} />
+              <ThemedText
+                colorName="textSecondary"
+                style={{ marginTop: 12, textAlign: "center" }}
+              >
+                Você ainda não participa de{"\n"}
+                nenhuma viagem compartilhada.
+              </ThemedText>
+            </View>
+          );
+        }
+        return <ListTrips userTrips={participatingTrips} />;
+
       default:
         return <ListTrips userTrips={myTrips} />;
     }

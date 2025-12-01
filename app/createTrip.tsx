@@ -159,20 +159,39 @@ export default function CreateTrip() {
   const loadTripData = async () => {
     try {
       setIsLoadingTrip(true);
-      const trips = await getMyTrips();
-      const trip = trips.find((t) => t.id === tripId);
+
+      // Busca token e userId primeiro
+      const [token, userId] = await Promise.all([
+        AsyncStorage.getItem("userToken"),
+        AsyncStorage.getItem("userId"),
+      ]);
+
+      // Busca tanto nas viagens criadas quanto nas participando
+      const [myTrips, participatingTrips] = await Promise.all([
+        getMyTrips(),
+        token
+          ? fetch(`${API_URL}/trips/participando`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }).then((res) => (res.ok ? res.json() : []))
+          : Promise.resolve([]),
+      ]);
+
+      // Procura a viagem em ambas as listas
+      let trip = myTrips.find((t) => t.id === tripId);
+
+      if (!trip) {
+        trip = participatingTrips.find((t: any) => t.id === tripId);
+      }
 
       if (!trip) {
         Alert.alert("Erro", "Viagem não encontrada");
         router.back();
         return;
       }
-
-      // Busca a lista de amigos do usuário logado
-      const [token, userId] = await Promise.all([
-        AsyncStorage.getItem("userToken"),
-        AsyncStorage.getItem("userId"),
-      ]);
 
       let friendsData: any[] = [];
 
@@ -375,6 +394,53 @@ export default function CreateTrip() {
         );
       } else {
         // Modo de criação - cria viagem completa
+        const [token, userId] = await Promise.all([
+          AsyncStorage.getItem("userToken"),
+          AsyncStorage.getItem("userId"),
+        ]);
+
+        // Busca o email do usuário logado
+        let currentUserEmail = "";
+        if (token && userId) {
+          try {
+            const userResponse = await fetch(`${API_URL}/users/me`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              currentUserEmail = userData.email;
+              console.log("📧 Email do usuário logado:", currentUserEmail);
+            }
+          } catch (error) {
+            console.warn("Não foi possível buscar email do usuário:", error);
+          }
+        }
+
+        // Prepara a lista de emails dos participantes
+        const participantEmails = data.guests.map((guest) => guest.email);
+
+        // Garante que o criador está na lista como PRIMEIRO participante (será EDITOR)
+        if (currentUserEmail && !participantEmails.includes(currentUserEmail)) {
+          participantEmails.unshift(currentUserEmail); // Adiciona no início
+          console.log(
+            "✅ Criador adicionado automaticamente como primeiro participante (EDITOR)"
+          );
+        } else if (
+          currentUserEmail &&
+          participantEmails.includes(currentUserEmail)
+        ) {
+          // Se já está na lista, move para o início para garantir que seja EDITOR
+          const index = participantEmails.indexOf(currentUserEmail);
+          participantEmails.splice(index, 1);
+          participantEmails.unshift(currentUserEmail);
+          console.log("✅ Criador movido para primeiro participante (EDITOR)");
+        }
+
         const payload: CreateTripApiRequest = {
           titulo: data.name,
           localPartida: data.departure_location,
@@ -394,11 +460,12 @@ export default function CreateTrip() {
               dataHora: dateTime.toISOString(),
             };
           }),
-          participantes: data.guests.map((guest) => guest.email),
+          participantes: participantEmails,
         };
 
         console.log("📋 Dados validados do formulário:", data);
         console.log("📤 Payload para API:", payload);
+        console.log("👥 Participantes (ordem):", participantEmails);
 
         const response = await createTrip(payload);
 

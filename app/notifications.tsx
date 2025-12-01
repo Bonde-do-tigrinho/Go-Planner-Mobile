@@ -22,7 +22,7 @@ const API_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://192.168.15.10:8082/api";
 
 // --- 1. Definição dos tipos baseados na API ---
-type NotificationType = "SOLICITACAO_AMIZADE" | "CONVITE_VIAGEM";
+type NotificationType = "SOLICITACAO_AMIZADE" | "SOLICITACAO_VIAGEM";
 
 type ApiNotification = {
   id: string;
@@ -77,7 +77,7 @@ export default function NotificationsScreen() {
       }
 
       const response = await fetch(
-        `${API_URL}/notifications/minhasNotificacoes`,
+        `${API_URL}/notifications/minhas-notificacoes`,
         {
           method: "GET",
           headers: {
@@ -91,6 +91,15 @@ export default function NotificationsScreen() {
         const data: ApiNotification[] = await response.json();
         console.log("Resposta completa da API:", JSON.stringify(data, null, 2));
         console.log("Primeira notificação completa:", data[0]);
+        console.log(
+          "🔎 Tipos das notificações:",
+          data.map((n) => ({
+            id: n.id,
+            tipo: n.tipo,
+            tipoString: String(n.tipo),
+            tipoJSON: JSON.stringify(n.tipo),
+          }))
+        );
         setNotifications(data);
         groupNotifications(data);
       } else {
@@ -156,7 +165,9 @@ export default function NotificationsScreen() {
   const handleAccept = async (
     notificationId: string,
     solicitanteId: string,
-    solicitadoId: string
+    solicitadoId: string,
+    tipo: NotificationType,
+    referenciaId?: string
   ) => {
     try {
       const token = await AsyncStorage.getItem("userToken");
@@ -167,21 +178,52 @@ export default function NotificationsScreen() {
 
       console.log("=== ACEITAR SOLICITAÇÃO ===");
       console.log("NotificationId:", notificationId);
-      console.log("Payload:", JSON.stringify({ solicitanteId, solicitadoId }));
+      console.log("Tipo:", tipo);
+      console.log("ReferenciaId:", referenciaId);
 
-      const response = await fetch(`${API_URL}/friend/accept-friend`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          solicitanteId,
-          solicitadoId,
-        }),
-      });
+      let response;
 
-      if (response.ok) {
+      if (tipo === "SOLICITACAO_AMIZADE") {
+        // Aceitar solicitação de amizade
+        console.log(
+          "Payload:",
+          JSON.stringify({ solicitanteId, solicitadoId })
+        );
+
+        response = await fetch(`${API_URL}/friend/accept-friend`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            solicitanteId,
+            solicitadoId,
+          }),
+        });
+      } else if (tipo === "SOLICITACAO_VIAGEM" && referenciaId) {
+        // Aceitar convite de viagem
+        console.log(
+          "Payload:",
+          JSON.stringify({ solicitacaoId: referenciaId })
+        );
+
+        response = await fetch(
+          `${API_URL}/trips/convites/${referenciaId}/aceitar`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else {
+        Alert.alert("Erro", "Tipo de notificação desconhecido.");
+        return;
+      }
+
+      if (response && response.ok) {
         // Remove a notificação da lista
         const updatedNotifications = notifications.filter(
           (n) => n.id !== notificationId
@@ -189,8 +231,13 @@ export default function NotificationsScreen() {
         setNotifications(updatedNotifications);
         groupNotifications(updatedNotifications);
 
-        Alert.alert("Sucesso", "Solicitação de amizade aceita!");
-      } else {
+        const successMessage =
+          tipo === "SOLICITACAO_AMIZADE"
+            ? "Solicitação de amizade aceita!"
+            : "Solicitação de viagem aceita!";
+
+        Alert.alert("Sucesso", successMessage);
+      } else if (response) {
         const errorData = await response.json();
         console.error("Erro ao aceitar:", errorData);
         Alert.alert(
@@ -208,7 +255,9 @@ export default function NotificationsScreen() {
   const handleDecline = async (
     notificationId: string,
     solicitanteId: string,
-    solicitadoId: string
+    solicitadoId: string,
+    tipo: NotificationType,
+    referenciaId?: string
   ) => {
     try {
       const token = await AsyncStorage.getItem("userToken");
@@ -219,21 +268,52 @@ export default function NotificationsScreen() {
 
       console.log("=== RECUSAR SOLICITAÇÃO ===");
       console.log("NotificationId:", notificationId);
-      console.log("Payload:", JSON.stringify({ solicitanteId, solicitadoId }));
+      console.log("Tipo:", tipo);
+      console.log("ReferenciaId:", referenciaId);
 
-      const response = await fetch(`${API_URL}/friend/decline-friend`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          solicitanteId,
-          solicitadoId,
-        }),
-      });
+      let response;
 
-      if (response.ok) {
+      if (tipo === "SOLICITACAO_AMIZADE") {
+        // Recusar solicitação de amizade
+        console.log(
+          "Payload:",
+          JSON.stringify({ solicitanteId, solicitadoId })
+        );
+
+        response = await fetch(`${API_URL}/friend/decline-friend`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            solicitanteId,
+            solicitadoId,
+          }),
+        });
+      } else if (tipo === "SOLICITACAO_VIAGEM" && referenciaId) {
+        // Recusar convite de viagem
+        console.log(
+          "Payload:",
+          JSON.stringify({ solicitacaoId: referenciaId })
+        );
+
+        response = await fetch(
+          `${API_URL}/trips/convites/${referenciaId}/recusar`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else {
+        Alert.alert("Erro", "Tipo de notificação desconhecido.");
+        return;
+      }
+
+      if (response && response.ok) {
         // Remove a notificação da lista
         const updatedNotifications = notifications.filter(
           (n) => n.id !== notificationId
@@ -241,8 +321,13 @@ export default function NotificationsScreen() {
         setNotifications(updatedNotifications);
         groupNotifications(updatedNotifications);
 
-        Alert.alert("Sucesso", "Solicitação de amizade recusada.");
-      } else {
+        const successMessage =
+          tipo === "SOLICITACAO_AMIZADE"
+            ? "Solicitação de amizade recusada."
+            : "Solicitação de viagem recusada.";
+
+        Alert.alert("Sucesso", successMessage);
+      } else if (response) {
         const errorData = await response.json();
         console.error("Erro ao recusar:", errorData);
         Alert.alert(
@@ -301,20 +386,46 @@ export default function NotificationsScreen() {
     let icon: keyof typeof Ionicons.glyphMap = "alert-circle";
     let showActions: boolean = false;
 
-    switch (item.tipo) {
-      case "CONVITE_VIAGEM":
-        icon = "airplane";
-        showActions = true;
-        break;
-      case "SOLICITACAO_AMIZADE":
-        icon = "person-add";
-        showActions = true;
-        break;
-      default:
-        icon = "notifications";
-        showActions = false;
+    console.log("🔍 getNotificationDetails para item:", {
+      id: item.id,
+      tipo: item.tipo,
+      tipoType: typeof item.tipo,
+      tipoValue: JSON.stringify(item.tipo),
+      tipoTrim: item.tipo?.trim(),
+      comparison1: item.tipo === "SOLICITACAO_VIAGEM",
+      comparison2: item.tipo === "SOLICITACAO_AMIZADE",
+      comparisonTrim: item.tipo?.trim() === "SOLICITACAO_VIAGEM",
+    });
+
+    // Normaliza o tipo removendo espaços extras
+    const tipoNormalizado = item.tipo?.trim();
+
+    if (tipoNormalizado === "SOLICITACAO_VIAGEM") {
+      icon = "airplane";
+      showActions = true;
+      console.log(
+        "✅ Definido como SOLICITACAO_VIAGEM - showActions:",
+        showActions
+      );
+    } else if (tipoNormalizado === "SOLICITACAO_AMIZADE") {
+      icon = "person-add";
+      showActions = true;
+      console.log(
+        "✅ Definido como SOLICITACAO_AMIZADE - showActions:",
+        showActions
+      );
+    } else {
+      icon = "notifications";
+      showActions = false;
+      console.log(
+        "⚠️ Tipo desconhecido:",
+        item.tipo,
+        "- showActions:",
+        showActions
+      );
     }
 
+    console.log("🎯 Retornando:", { icon, showActions });
     return { icon, showActions };
   };
 
@@ -368,6 +479,13 @@ export default function NotificationsScreen() {
             renderItem={({ item }) => {
               const { icon, showActions } = getNotificationDetails(item);
 
+              console.log("📋 Renderizando item:", {
+                id: item.id,
+                tipo: item.tipo,
+                icon,
+                showActions,
+              });
+
               // Fallback para mensagem se vier undefined
               const messageText =
                 item.message ||
@@ -384,14 +502,18 @@ export default function NotificationsScreen() {
                     handleAccept(
                       item.id,
                       item.remetenteId || "",
-                      item.destinatarioId || ""
+                      item.destinatarioId || "",
+                      item.tipo,
+                      item.referenciaId
                     )
                   }
                   onDecline={() =>
                     handleDecline(
                       item.id,
                       item.remetenteId || "",
-                      item.destinatarioId || ""
+                      item.destinatarioId || "",
+                      item.tipo,
+                      item.referenciaId
                     )
                   }
                 />
