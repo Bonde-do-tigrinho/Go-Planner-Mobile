@@ -9,7 +9,7 @@
 
 **O seu companheiro definitivo para planejar, organizar e realizar viagens em grupo.**
 
-[Funcionalidades](#-funcionalidades) • [Tecnologias](#-tecnologias) • [Pré-requisitos](#-pré-requisitos) • [Como Rodar](#-como-rodar-o-projeto) • [Estrutura](#-estrutura-do-projeto)
+[Funcionalidades](#-funcionalidades) • [Tecnologias](#-tecnologias) • [Pré-requisitos](#-pré-requisitos) • [Como Rodar](#-como-rodar-o-projeto)
 
 </div>
 
@@ -66,7 +66,7 @@ Antes de começar, você precisa ter instalado em sua máquina:
 
 ---
 
-## 🏃‍♂️ Como rodar o projeto
+##  Como rodar o projeto
 
 1. **Clone o repositório**
    ```bash
