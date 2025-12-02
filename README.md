@@ -131,6 +131,14 @@ Um agradecimento especial a todos que contribuíram para tornar este projeto rea
         </sub>
       </a>
     </td>
+    <td align="center">
+      <a href="https://github.com/Kendi9866">
+        <img src="https://avatars.githubusercontent.com/u/142095341?v=4" width="100px;" alt="Foto do Miguel"/><br>
+        <sub>
+          <b>Gabriel Kendi</b>
+        </sub>
+      </a>
+    </td>
 
      
   </tr>
