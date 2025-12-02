@@ -127,7 +127,7 @@ Um agradecimento especial a todos que contribuíram para tornar este projeto rea
       <a href="https://github.com/Bzats">
         <img src="https://avatars.githubusercontent.com/u/142127455?v=4" width="100px;" alt="Foto do Miguel"/><br>
         <sub>
-          <b>Miguel Silva</b>
+          <b>Miguel Lemos</b>
         </sub>
       </a>
     </td>
