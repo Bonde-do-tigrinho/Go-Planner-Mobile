@@ -133,9 +133,17 @@ Um agradecimento especial a todos que contribuíram para tornar este projeto rea
     </td>
     <td align="center">
       <a href="https://github.com/Kendi9866">
-        <img src="https://avatars.githubusercontent.com/u/142095341?v=4" width="100px;" alt="Foto do Miguel"/><br>
+        <img src="https://avatars.githubusercontent.com/u/142095341?v=4" width="100px;" alt="Foto do Kendas"/><br>
         <sub>
           <b>Gabriel Kendi</b>
+        </sub>
+      </a>
+    </td>
+      <td align="center">
+      <a href="https://github.com/MaximianoJ?tab=repositories">
+        <img src="https://avatars.githubusercontent.com/u/145203151?v=4" width="100px;" alt="Foto do Jão"/><br>
+        <sub>
+          <b>João Gabriel</b>
         </sub>
       </a>
     </td>
