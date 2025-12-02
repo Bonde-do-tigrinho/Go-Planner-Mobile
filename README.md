@@ -17,7 +17,7 @@
 
 ## 📖 Sobre o Projeto
 
-O **Go Planner** é uma aplicação móvel desenvolvida para simplificar a organização de viagens. Com ele, você pode criar itinerários, convidar amigos, gerenciar atividades e manter todos os detalhes da sua aventura em um só lugar.
+O **Go Planner** é uma aplicação móvel desenvolvida para simplificar a organização de viagens. Com ele, você pode criar atividades, convidar amigos, gerenciar viagens e manter todos os detalhes da sua aventura em um só lugar.
 
 O projeto foi construído com foco em performance e experiência do usuário (UX), utilizando as tecnologias mais recentes do ecossistema React Native e Expo.
 
