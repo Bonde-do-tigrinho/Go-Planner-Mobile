@@ -9,7 +9,7 @@
 
 **O seu companheiro definitivo para planejar, organizar e realizar viagens em grupo.**
 
-[Funcionalidades](#-funcionalidades) • [Tecnologias](#-tecnologias) • [Pré-requisitos](#-pré-requisitos) • [Como Rodar](#-como-rodar-o-projeto)
+[Funcionalidades](#-funcionalidades) • [Tecnologias](#-tecnologias) • [Pré-requisitos](#-pré-requisitos) • [Como Rodar](#como-rodar-o-projeto)
 
 </div>
 
@@ -87,9 +87,9 @@ Antes de começar, você precisa ter instalado em sua máquina:
 
     
 4. **Abra o App**
-   * Use o app **Expo Go** (disponível na App Store ou Google Play) no seu celular para escanear o QR Code exibido no terminal.
+   * Use o app **Expo Go** no seu celular para escanear o QR Code exibido no terminal.
    * Ou pressione `a` no terminal para abrir no emulador Android.
-   * Ou pressione `i` no terminal para abrir no simulador iOS (apenas Mac).
+   * Ou pressione `i` no terminal para abrir no simulador iOS (no Mac).
 
 ---
 
